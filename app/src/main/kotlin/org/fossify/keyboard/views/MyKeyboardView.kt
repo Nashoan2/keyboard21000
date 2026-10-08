@@ -1818,6 +1818,16 @@ class MyKeyboardView @JvmOverloads constructor(
         invalidateKey(mCurrentKey)
     }
 
+    private fun isAnyPanelOpen(): Boolean {
+        return keyboardViewBinding?.run {
+            clipboardManagerHolder.visibility == View.VISIBLE ||
+                emojiPaletteHolder.visibility == View.VISIBLE ||
+                toolsMenuHolder.visibility == View.VISIBLE ||
+                textEditorHolder.visibility == View.VISIBLE ||
+                numericKeypadHolder.visibility == View.VISIBLE
+        } ?: false
+    }
+
     fun closeAllPanels() {
         keyboardViewBinding?.apply {
             clipboardManagerHolder.beGone()
@@ -1832,17 +1842,29 @@ class MyKeyboardView @JvmOverloads constructor(
     fun openNumericKeypad() {
         closeAllPanels()
         keyboardViewBinding?.apply {
+            val isArabic = context.config.keyboardLanguage == LANGUAGE_ARABIC
+            numKeyAbc.text = if (isArabic) "أ ب ج" else "ABC"
             numericKeypadHolder.beVisible()
             suggestionsHolder.hideAllInlineContentViews()
         }
     }
 
     fun closeNumericKeypad() {
-        keyboardViewBinding?.numericKeypadHolder?.beGone()
+        keyboardViewBinding?.apply {
+            numericKeypadHolder.beGone()
+            if (!isAnyPanelOpen()) {
+                suggestionsHolder.showAllInlineContentViews()
+            }
+        }
     }
 
     fun closeClipboardManager() {
-        closeAllPanels()
+        keyboardViewBinding?.apply {
+            clipboardManagerHolder.beGone()
+            if (!isAnyPanelOpen()) {
+                suggestionsHolder.showAllInlineContentViews()
+            }
+        }
     }
 
     fun openClipboardManager() {
@@ -2065,8 +2087,13 @@ class MyKeyboardView @JvmOverloads constructor(
         setupEmojis()
     }
 
-    private fun closeEmojiPalette() {
-        closeAllPanels()
+    fun closeEmojiPalette() {
+        keyboardViewBinding?.apply {
+            emojiPaletteHolder.beGone()
+            if (!isAnyPanelOpen()) {
+                suggestionsHolder.showAllInlineContentViews()
+            }
+        }
     }
 
     private fun setupEmojis() {

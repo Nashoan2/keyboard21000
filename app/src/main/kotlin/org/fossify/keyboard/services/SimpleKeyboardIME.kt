@@ -192,19 +192,30 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
 
     override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) {
         super.onStartInput(attribute, restarting)
-        inputTypeClass = attribute?.inputType?.and(TYPE_MASK_CLASS) ?: TYPE_CLASS_TEXT
-        inputTypeClassVariation = attribute?.inputType?.and(TYPE_MASK_VARIATION) ?: 0
-        enterKeyType = attribute?.imeOptions?.and(IME_MASK_ACTION or IME_FLAG_NO_ENTER_ACTION) ?: 0
-        keyboard = createNewKeyboard()
-        keyboard?.let { keyboardView?.setKeyboard(it) }
+        val newInputTypeClass = attribute?.inputType?.and(TYPE_MASK_CLASS) ?: TYPE_CLASS_TEXT
+        val newInputTypeClassVariation = attribute?.inputType?.and(TYPE_MASK_VARIATION) ?: 0
+        val newEnterKeyType = attribute?.imeOptions?.and(IME_MASK_ACTION or IME_FLAG_NO_ENTER_ACTION) ?: 0
+
+        val inputTypeChanged = newInputTypeClass != inputTypeClass ||
+            newInputTypeClassVariation != inputTypeClassVariation ||
+            newEnterKeyType != enterKeyType
+
+        inputTypeClass = newInputTypeClass
+        inputTypeClassVariation = newInputTypeClassVariation
+        enterKeyType = newEnterKeyType
+
+        if (!restarting || inputTypeChanged) {
+            keyboard = createNewKeyboard()
+            keyboard?.let { keyboardView?.setKeyboard(it) }
+            if (inputTypeClass == TYPE_CLASS_NUMBER || inputTypeClass == TYPE_CLASS_PHONE) {
+                keyboardView?.openNumericKeypad()
+            }
+        }
         attribute?.let { keyboardView?.setEditorInfo(it) }
         if (isNougatPlus()) {
             breakIterator = BreakIterator.getCharacterInstance(ULocale.getDefault())
         }
         updateShiftKeyState()
-        if (inputTypeClass == TYPE_CLASS_NUMBER || inputTypeClass == TYPE_CLASS_PHONE) {
-            keyboardView?.openNumericKeypad()
-        }
     }
 
     private fun updateShiftKeyState() {
