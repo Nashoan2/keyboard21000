@@ -1116,19 +1116,20 @@ class MyKeyboardView @JvmOverloads constructor(
     }
 
     private fun toggleClipboardVisibility(show: Boolean) {
+        val binding = keyboardViewBinding ?: return
         if (
-            (show && keyboardViewBinding?.clipboardValue!!.alpha == 0f) ||
-            (!show && keyboardViewBinding?.clipboardValue!!.alpha == 1f)
+            (show && binding.clipboardValue.alpha == 0f) ||
+            (!show && binding.clipboardValue.alpha == 1f)
         ) {
             val newAlpha = if (show) 1f else 0f
             val animations = ArrayList<ObjectAnimator>()
             val clipboardValueAnimation = ObjectAnimator.ofFloat(
-                keyboardViewBinding!!.clipboardValue, "alpha", newAlpha
+                binding.clipboardValue, "alpha", newAlpha
             )
             animations.add(clipboardValueAnimation)
 
             val clipboardClearAnimation = ObjectAnimator.ofFloat(
-                keyboardViewBinding!!.clipboardClear, "alpha", newAlpha
+                binding.clipboardClear, "alpha", newAlpha
             )
             animations.add(clipboardClearAnimation)
 

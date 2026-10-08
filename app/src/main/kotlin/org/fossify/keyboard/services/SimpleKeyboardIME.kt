@@ -192,12 +192,12 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
 
     override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) {
         super.onStartInput(attribute, restarting)
-        inputTypeClass = attribute!!.inputType and TYPE_MASK_CLASS
-        inputTypeClassVariation = attribute.inputType and TYPE_MASK_VARIATION
-        enterKeyType = attribute.imeOptions and (IME_MASK_ACTION or IME_FLAG_NO_ENTER_ACTION)
+        inputTypeClass = attribute?.inputType?.and(TYPE_MASK_CLASS) ?: TYPE_CLASS_TEXT
+        inputTypeClassVariation = attribute?.inputType?.and(TYPE_MASK_VARIATION) ?: 0
+        enterKeyType = attribute?.imeOptions?.and(IME_MASK_ACTION or IME_FLAG_NO_ENTER_ACTION) ?: 0
         keyboard = createNewKeyboard()
-        keyboardView?.setKeyboard(keyboard!!)
-        keyboardView?.setEditorInfo(attribute)
+        keyboard?.let { keyboardView?.setKeyboard(it) }
+        attribute?.let { keyboardView?.setEditorInfo(it) }
         if (isNougatPlus()) {
             breakIterator = BreakIterator.getCharacterInstance(ULocale.getDefault())
         }
@@ -211,7 +211,8 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
 
         val editorInfo = currentInputEditorInfo
         if (config.enableSentencesCapitalization && editorInfo != null && editorInfo.inputType != TYPE_NULL) {
-            if (currentInputConnection.getCursorCapsMode(editorInfo.inputType) != 0) {
+            val capsMode = currentInputConnection?.getCursorCapsMode(editorInfo.inputType) ?: 0
+            if (capsMode != 0) {
                 keyboard?.setShifted(ShiftState.ON_ONE_CHAR)
                 keyboardView?.invalidateAllKeys()
                 return
@@ -447,7 +448,8 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
 
             val editorInfo = currentInputEditorInfo
             if (editorInfo != null && editorInfo.inputType != TYPE_NULL && keyboard?.mShiftState != ShiftState.ON_PERMANENT) {
-                if (currentInputConnection.getCursorCapsMode(editorInfo.inputType) != 0) {
+                val capsMode = currentInputConnection?.getCursorCapsMode(editorInfo.inputType) ?: 0
+                if (capsMode != 0) {
                     keyboard?.setShifted(ShiftState.ON_ONE_CHAR)
                 }
             }
@@ -473,10 +475,11 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
                 val selEnd = extracted.selectionEnd
                 val newStart = (selStart - 1).coerceAtLeast(0)
                 ic.setSelection(newStart, selEnd)
+                keyboardView?.performHapticHandleMove()
                 return
             }
         }
-        sendDownUpKeyEvents(KeyEvent.KEYCODE_DPAD_LEFT)
+        moveCursor(false)
     }
 
     override fun moveCursorRight() {
@@ -489,10 +492,11 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
                 val selEnd = extracted.selectionEnd
                 val newEnd = (selEnd + 1).coerceAtMost(len)
                 ic.setSelection(selStart, newEnd)
+                keyboardView?.performHapticHandleMove()
                 return
             }
         }
-        sendDownUpKeyEvents(KeyEvent.KEYCODE_DPAD_RIGHT)
+        moveCursor(true)
     }
 
     override fun moveCursorUp() {
@@ -605,19 +609,24 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
 
     private fun moveCursor(moveRight: Boolean) {
         val inputConnection = currentInputConnection
-        val extractedText = inputConnection.getExtractedText(ExtractedTextRequest(), 0) ?: return
-        val text = extractedText.text ?: return
-        val oldPos = extractedText.selectionStart
-        val newPos = if (moveRight) {
-            oldPos + 1
-        } else {
-            oldPos - 1
-        }.coerceIn(0, text.length)
+        val extractedText = inputConnection?.getExtractedText(ExtractedTextRequest(), 0)
+        val text = extractedText?.text
+        if (text != null) {
+            val oldPos = extractedText.selectionStart
+            val newPos = if (moveRight) {
+                oldPos + 1
+            } else {
+                oldPos - 1
+            }.coerceIn(0, text.length)
 
-        if (newPos != oldPos) {
-            inputConnection?.setSelection(newPos, newPos)
-            keyboardView?.performHapticHandleMove()
+            if (newPos != oldPos) {
+                inputConnection.setSelection(newPos, newPos)
+                keyboardView?.performHapticHandleMove()
+                return
+            }
         }
+        sendDownUpKeyEvents(if (moveRight) KeyEvent.KEYCODE_DPAD_RIGHT else KeyEvent.KEYCODE_DPAD_LEFT)
+        keyboardView?.performHapticHandleMove()
     }
 
     private fun getImeOptionsActionId(): Int {

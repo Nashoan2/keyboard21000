@@ -45,9 +45,6 @@ class ClipsKeyboardAdapter(
 
     private val layoutInflater = LayoutInflater.from(context)
 
-    private var textColor = context.getProperTextColor()
-    private var backgroundColor = context.getProperBackgroundColor()
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = when (viewType) {
             ITEM_SECTION_LABEL -> ItemSectionLabelBinding.inflate(layoutInflater, parent, false)
@@ -208,8 +205,10 @@ class ClipsKeyboardAdapter(
                             val currentClip = context.getCurrentClip() ?: return@ensureBackgroundThread
                             val clip = Clip(null, currentClip)
                             ClipsHelper(context).insertClip(clip)
-                            refreshClipsListener.refreshClips()
-                            context.toast(R.string.text_pinned)
+                            Handler(Looper.getMainLooper()).post {
+                                refreshClipsListener.refreshClips()
+                                context.toast(R.string.text_pinned)
+                            }
                         }
                     }
                 } else {
