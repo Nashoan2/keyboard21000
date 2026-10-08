@@ -193,28 +193,9 @@ class ClipsKeyboardAdapter(
         ItemSectionLabelBinding.bind(view).apply {
             clipsSectionLabel.apply {
                 text = sectionLabel.value
-                setTextColor(Color.parseColor("#00D2FF"))
+                setTextColor(Color.parseColor("#A0ABC0"))
             }
-
-            clipsSectionIcon.apply {
-                if (sectionLabel.isCurrent) {
-                    visibility = View.VISIBLE
-                    setImageResource(R.drawable.ic_pin_cyan)
-                    setOnClickListener {
-                        ensureBackgroundThread {
-                            val currentClip = context.getCurrentClip() ?: return@ensureBackgroundThread
-                            val clip = Clip(null, currentClip)
-                            ClipsHelper(context).insertClip(clip)
-                            Handler(Looper.getMainLooper()).post {
-                                refreshClipsListener.refreshClips()
-                                context.toast(R.string.text_pinned)
-                            }
-                        }
-                    }
-                } else {
-                    visibility = View.GONE
-                }
-            }
+            clipsSectionIcon.visibility = View.GONE
         }
     }
 

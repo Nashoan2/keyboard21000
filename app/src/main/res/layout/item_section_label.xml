@@ -3,33 +3,26 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingStart="8dp"
-    android:paddingTop="8dp"
-    android:paddingEnd="8dp"
-    android:paddingBottom="4dp">
+    android:paddingStart="12dp"
+    android:paddingTop="12dp"
+    android:paddingEnd="12dp"
+    android:paddingBottom="6dp">
 
     <org.fossify.commons.views.MyTextView
         android:id="@+id/clips_section_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
-        android:textAlignment="viewStart"
-        android:textColor="#00D2FF"
-        android:textSize="13sp"
+        android:textColor="#A0ABC0"
+        android:textSize="14sp"
         android:textStyle="bold"
-        tools:text="@string/pinned_clips" />
+        tools:text="الأحدث" />
 
     <ImageView
         android:id="@+id/clips_section_icon"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_centerVertical="true"
-        android:layout_marginStart="6dp"
-        android:layout_toEndOf="@+id/clips_section_label"
-        android:background="?android:attr/selectableItemBackgroundBorderless"
-        android:contentDescription="@string/pin_text"
-        android:padding="2dp"
-        android:src="@drawable/ic_pin_cyan" />
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
 
 </RelativeLayout>
