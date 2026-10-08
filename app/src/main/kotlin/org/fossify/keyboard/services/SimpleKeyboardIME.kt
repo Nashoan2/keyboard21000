@@ -202,6 +202,9 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
             breakIterator = BreakIterator.getCharacterInstance(ULocale.getDefault())
         }
         updateShiftKeyState()
+        if (inputTypeClass == TYPE_CLASS_NUMBER || inputTypeClass == TYPE_CLASS_PHONE) {
+            keyboardView?.openNumericKeypad()
+        }
     }
 
     private fun updateShiftKeyState() {
@@ -310,6 +313,7 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
             }
 
             MyKeyboard.KEYCODE_SYMBOLS_MODE_CHANGE -> {
+                keyboardView?.closeNumericKeypad()
                 val keyboardXML = if (keyboardMode == KEYBOARD_SYMBOLS || keyboardMode == KEYBOARD_SYMBOLS_SHIFT) {
                     keyboardMode = KEYBOARD_SYMBOLS_ALT
                     R.xml.keys_symbols_alt
@@ -323,16 +327,15 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
             }
 
             MyKeyboard.KEYCODE_MODE_CHANGE -> {
-                val keyboardXml = if (keyboardMode == KEYBOARD_LETTERS) {
-                    keyboardMode = KEYBOARD_SYMBOLS
-                    R.xml.keys_symbols
+                if (keyboardMode == KEYBOARD_LETTERS) {
+                    keyboardView?.openNumericKeypad()
                 } else {
                     keyboardMode = KEYBOARD_LETTERS
-                    getKeyboardLayoutXML()
+                    keyboardView?.closeAllPanels()
+                    val keyboardXml = getKeyboardLayoutXML()
+                    keyboard = constructKeyboard(keyboardXml, enterKeyType)
+                    keyboardView!!.setKeyboard(keyboard!!)
                 }
-
-                keyboard = constructKeyboard(keyboardXml, enterKeyType)
-                keyboardView!!.setKeyboard(keyboard!!)
             }
 
             MyKeyboard.KEYCODE_LAM_ALEF -> {

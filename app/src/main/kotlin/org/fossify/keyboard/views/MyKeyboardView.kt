@@ -580,6 +580,71 @@ class MyKeyboardView @JvmOverloads constructor(
                 mOnKeyboardActionListener?.insertSpace()
             }
 
+            // Numeric Keypad actions (Matches image 100%)
+            fun sendNumericChar(char: String) {
+                vibrateIfNeeded()
+                mOnKeyboardActionListener?.onText(char)
+            }
+
+            fun sendNumericCode(code: Int) {
+                vibrateIfNeeded()
+                mOnKeyboardActionListener?.onKey(code)
+            }
+
+            numKeyPlus.setOnClickListener { sendNumericChar("+") }
+            numKey1.setOnClickListener { sendNumericChar("1") }
+            numKey2.setOnClickListener { sendNumericChar("2") }
+            numKey3.setOnClickListener { sendNumericChar("3") }
+            numKeyPercent.setOnClickListener { sendNumericChar("%") }
+
+            numKeyMinus.setOnClickListener { sendNumericChar("-") }
+            numKey4.setOnClickListener { sendNumericChar("4") }
+            numKey5.setOnClickListener { sendNumericChar("5") }
+            numKey6.setOnClickListener { sendNumericChar("6") }
+            numKeySpace.setOnClickListener { sendNumericCode(KEYCODE_SPACE) }
+
+            numKeyMultiply.setOnClickListener { sendNumericChar("*") }
+            numKey7.setOnClickListener { sendNumericChar("7") }
+            numKey8.setOnClickListener { sendNumericChar("8") }
+            numKey9.setOnClickListener { sendNumericChar("9") }
+
+            numKeyBackspace.setOnTouchListener { _, event ->
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        numKeyBackspace.isPressed = true
+                        mRepeatKeyIndex = mKeys.indexOfFirst { it.code == KEYCODE_DELETE }
+                        mCurrentKey = mRepeatKeyIndex
+                        vibrateIfNeeded()
+                        mOnKeyboardActionListener?.onKey(KEYCODE_DELETE)
+                        val msg = mHandler?.obtainMessage(MSG_REPEAT)
+                        if (msg != null) mHandler?.sendMessageDelayed(msg, REPEAT_START_DELAY.toLong())
+                        true
+                    }
+                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                        mHandler?.removeMessages(MSG_REPEAT)
+                        mRepeatKeyIndex = NOT_A_KEY
+                        numKeyBackspace.isPressed = false
+                        false
+                    }
+                    else -> false
+                }
+            }
+
+            numKeyDivide.setOnClickListener { sendNumericChar("/") }
+            numKeyAbc.setOnClickListener {
+                vibrateIfNeeded()
+                closeNumericKeypad()
+            }
+            numKeySymbols.setOnClickListener {
+                vibrateIfNeeded()
+                closeNumericKeypad()
+                mOnKeyboardActionListener?.onKey(MyKeyboard.KEYCODE_SYMBOLS_MODE_CHANGE)
+            }
+            numKey0.setOnClickListener { sendNumericChar("0") }
+            numKeyEquals.setOnClickListener { sendNumericChar("=") }
+            numKeyDot.setOnClickListener { sendNumericChar(".") }
+            numKeyEnter.setOnClickListener { sendNumericCode(KEYCODE_ENTER) }
+
             settingsCog.setOnLongClickListener { context.toast(R.string.settings); true; }
             settingsCog.setOnClickListener {
                 vibrateIfNeeded()
@@ -1759,8 +1824,21 @@ class MyKeyboardView @JvmOverloads constructor(
             emojiPaletteHolder.beGone()
             toolsMenuHolder.beGone()
             textEditorHolder.beGone()
+            numericKeypadHolder.beGone()
             suggestionsHolder.showAllInlineContentViews()
         }
+    }
+
+    fun openNumericKeypad() {
+        closeAllPanels()
+        keyboardViewBinding?.apply {
+            numericKeypadHolder.beVisible()
+            suggestionsHolder.hideAllInlineContentViews()
+        }
+    }
+
+    fun closeNumericKeypad() {
+        keyboardViewBinding?.numericKeypadHolder?.beGone()
     }
 
     fun closeClipboardManager() {

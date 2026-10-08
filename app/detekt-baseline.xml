@@ -11,6 +11,7 @@
     <ID>CyclomaticComplexMethod:ContextExt.kt$fun Context.setupKeyboardDialogStuff( windowToken: IBinder, view: View, dialog: AlertDialog.Builder, titleId: Int = 0, titleText: String = "", cancelOnTouchOutside: Boolean = true, callback: ((alertDialog: AlertDialog) -&gt; Unit)? = null )</ID>
     <ID>CyclomaticComplexMethod:MyKeyboard.kt$MyKeyboard$@SuppressLint("UseCompatLoadingForDrawables") private fun loadKeyboard(context: Context, parser: XmlResourceParser)</ID>
     <ID>CyclomaticComplexMethod:MyKeyboardView.kt$MyKeyboardView$@SuppressLint("UseCompatLoadingForDrawables") private fun onBufferDraw()</ID>
+    <ID>CyclomaticComplexMethod:MyKeyboardView.kt$MyKeyboardView$fun setKeyboardHolder(binding: KeyboardViewKeyboardBinding)</ID>
     <ID>CyclomaticComplexMethod:MyKeyboardView.kt$MyKeyboardView$override fun onTouchEvent(me: MotionEvent): Boolean</ID>
     <ID>CyclomaticComplexMethod:MyKeyboardView.kt$MyKeyboardView$private fun onModifiedTouchEvent(me: MotionEvent): Boolean</ID>
     <ID>CyclomaticComplexMethod:MyKeyboardView.kt$MyKeyboardView$private fun setupEmojiAdapter(emojis: List&lt;EmojiData&gt;)</ID>
