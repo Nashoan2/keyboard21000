@@ -4,9 +4,9 @@ import android.content.Context
 import android.graphics.Color
 
 fun Context.getKeyboardBackgroundColor(): Int {
-    return Color.parseColor("#E7F2E7")
+    return Color.parseColor("#060B14")
 }
 
 fun Context.getStrokeColor(): Int {
-    return Color.parseColor("#D4E2D4")
+    return Color.parseColor("#00D2FF")
 }

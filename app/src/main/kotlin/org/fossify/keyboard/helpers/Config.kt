@@ -16,12 +16,8 @@ class Config(context: Context) : BaseConfig(context) {
         set(vibrateOnKeypress) = prefs.edit().putBoolean(VIBRATE_ON_KEYPRESS, false).apply()
 
     var soundOnKeypress: Int
-        get() = SOUND_NONE
-        set(soundOnKeypress) = prefs.edit().putInt(SOUND_ON_KEYPRESS, SOUND_NONE).apply()
-
-    var isClipboardInitialized: Boolean
-        get() = prefs.getBoolean("is_clipboard_initialized", false)
-        set(value) = prefs.edit().putBoolean("is_clipboard_initialized", value).apply()
+        get() = prefs.getInt(SOUND_ON_KEYPRESS, SOUND_SYSTEM)
+        set(soundOnKeypress) = prefs.edit().putInt(SOUND_ON_KEYPRESS, soundOnKeypress).apply()
 
     var showPopupOnKeypress: Boolean
         get() = prefs.getBoolean(SHOW_POPUP_ON_KEYPRESS, true)

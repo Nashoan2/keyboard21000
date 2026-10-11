@@ -123,13 +123,35 @@ class SettingsActivity : SimpleActivity() {
     }
 
     private fun setupVibrateOnKeypress() {
-        binding.settingsVibrateOnKeypressHolder.beGone()
+        binding.apply {
+            settingsVibrateOnKeypress.isChecked = config.vibrateOnKeypress
+            settingsVibrateOnKeypressHolder.setOnClickListener {
+                settingsVibrateOnKeypress.toggle()
+                config.vibrateOnKeypress = settingsVibrateOnKeypress.isChecked
+            }
+        }
     }
 
     private fun setupSoundOnKeypress() {
-        binding.settingsSoundOnKeypressHolder.beGone()
+        binding.apply {
+            settingsSoundOnKeypress.text = getSoundOnKeypressText(config.soundOnKeypress)
+            settingsSoundOnKeypressHolder.setOnClickListener {
+                val items = arrayListOf(
+                    RadioItem(SOUND_NONE, getString(R.string.sound_none)),
+                    RadioItem(SOUND_SYSTEM, getString(R.string.sound_system)),
+                    RadioItem(SOUND_ALWAYS, getString(R.string.sound_always))
+                )
+                RadioGroupDialog(
+                    activity = this@SettingsActivity,
+                    items = items,
+                    checkedItemId = config.soundOnKeypress
+                ) {
+                    config.soundOnKeypress = it as Int
+                    settingsSoundOnKeypress.text = getSoundOnKeypressText(config.soundOnKeypress)
+                }
+            }
+        }
     }
-
 
     private fun getSoundOnKeypressText(mode: Int): String = getString(
         when (mode) {

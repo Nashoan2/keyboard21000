@@ -208,9 +208,7 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
             keyboard = createNewKeyboard()
             keyboard?.let { keyboardView?.setKeyboard(it) }
             if (inputTypeClass == TYPE_CLASS_NUMBER || inputTypeClass == TYPE_CLASS_PHONE) {
-                keyboardMode = KEYBOARD_SYMBOLS
-                keyboard = constructKeyboard(R.xml.keys_symbols, enterKeyType)
-                keyboardView?.setKeyboard(keyboard!!)
+                keyboardView?.openNumericKeypad()
             }
         }
         attribute?.let { keyboardView?.setEditorInfo(it) }
@@ -326,6 +324,7 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
             }
 
             MyKeyboard.KEYCODE_SYMBOLS_MODE_CHANGE -> {
+                keyboardView?.closeNumericKeypad()
                 val keyboardXML = if (keyboardMode == KEYBOARD_SYMBOLS || keyboardMode == KEYBOARD_SYMBOLS_SHIFT) {
                     keyboardMode = KEYBOARD_SYMBOLS_ALT
                     R.xml.keys_symbols_alt
@@ -339,13 +338,11 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
             }
 
             MyKeyboard.KEYCODE_MODE_CHANGE -> {
-                keyboardView?.closeAllPanels()
                 if (keyboardMode == KEYBOARD_LETTERS) {
-                    keyboardMode = KEYBOARD_SYMBOLS
-                    keyboard = constructKeyboard(R.xml.keys_symbols, enterKeyType)
-                    keyboardView!!.setKeyboard(keyboard!!)
+                    keyboardView?.openNumericKeypad()
                 } else {
                     keyboardMode = KEYBOARD_LETTERS
+                    keyboardView?.closeAllPanels()
                     val keyboardXml = getKeyboardLayoutXML()
                     keyboard = constructKeyboard(keyboardXml, enterKeyType)
                     keyboardView!!.setKeyboard(keyboard!!)
@@ -401,8 +398,36 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
                         switchToLetters = keyboardMode != KEYBOARD_SYMBOLS_ALT
                     }
                 } else {
-                    inputConnection.commitText(codeChar.toString(), 1)
-                    updateShiftKeyState()
+                    when {
+                        !originalText.isNullOrEmpty() && cachedVNTelexData.isNotEmpty() -> {
+                            val fullText = originalText.toString() + codeChar.toString()
+                            val lastIndexEmpty = if (fullText.contains(" ")) {
+                                fullText.lastIndexOf(" ")
+                            } else 0
+                            if (lastIndexEmpty >= 0) {
+                                val word = fullText.subSequence(lastIndexEmpty, fullText.length).trim().toString()
+                                val wordChars = word.toCharArray()
+                                val predictWord = StringBuilder()
+                                for (char in wordChars.size - 1 downTo 0) {
+                                    predictWord.append(wordChars[char])
+                                    val shouldChangeText = predictWord.reverse().toString()
+                                    if (cachedVNTelexData.containsKey(shouldChangeText)) {
+                                        inputConnection.setComposingRegion(fullText.length - shouldChangeText.length, fullText.length)
+                                        inputConnection.setComposingText(cachedVNTelexData[shouldChangeText], fullText.length)
+                                        inputConnection.setComposingRegion(fullText.length, fullText.length)
+                                        return
+                                    }
+                                }
+                                inputConnection.commitText(codeChar.toString(), 1)
+                                updateShiftKeyState()
+                            }
+                        }
+
+                        else -> {
+                            inputConnection.commitText(codeChar.toString(), 1)
+                            updateShiftKeyState()
+                        }
+                    }
                 }
             }
         }
@@ -585,17 +610,10 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
 
     override fun onUpdateSelection(oldSelStart: Int, oldSelEnd: Int, newSelStart: Int, newSelEnd: Int, candidatesStart: Int, candidatesEnd: Int) {
         super.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd)
+        if (newSelStart == newSelEnd) {
+            keyboardView?.closeClipboardManager()
+        }
         updateShiftKeyState()
-    }
-
-    override fun onFinishInputView(finishingInput: Boolean) {
-        super.onFinishInputView(finishingInput)
-        keyboardView?.closeAllPanels()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        keyboardView?.closeAllPanels()
     }
 
     override fun onUpdateCursorAnchorInfo(cursorAnchorInfo: CursorAnchorInfo?) {

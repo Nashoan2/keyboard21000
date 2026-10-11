@@ -7,7 +7,6 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
-import java.util.Collections
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -218,7 +217,6 @@ class MyKeyboardView @JvmOverloads constructor(
     private var mEmojiPaletteHolder: View? = null
     private var mToolsMenuHolder: View? = null
     private var mTextEditorHolder: View? = null
-    private var mPrimaryClipListener: ClipboardManager.OnPrimaryClipChangedListener? = null
     private var emojiCompatMetadataVersion = 0
 
     // For multi-tap
@@ -242,7 +240,6 @@ class MyKeyboardView @JvmOverloads constructor(
     private var mHandler: Handler? = null
 
     companion object {
-        val recentlyDeletedClips: MutableSet<String> = Collections.synchronizedSet(mutableSetOf())
         private const val NOT_A_KEY = -1
         private val LONG_PRESSABLE_STATE_SET = intArrayOf(R.attr.state_long_pressable)
         private const val MSG_REMOVE_PREVIEW = 1
@@ -381,11 +378,8 @@ class MyKeyboardView @JvmOverloads constructor(
             mTextEditorHolder = textEditorHolder
 
             toolbarSticker.setOnClickListener {
-                if (toolsMenuHolder.visibility == View.VISIBLE) {
-                    closeAllPanels()
-                } else {
-                    openToolsMenu()
-                }
+                vibrateIfNeeded()
+                openToolsMenu()
             }
 
             toolbarEmoji.setOnClickListener {
@@ -444,12 +438,9 @@ class MyKeyboardView @JvmOverloads constructor(
             }
 
             clipboardManagerClearAll.setOnClickListener {
+                vibrateIfNeeded()
                 ensureBackgroundThread {
-                    val currentSysClip = context.getCurrentClip()?.trim()
-                    if (!currentSysClip.isNullOrEmpty()) {
-                        recentlyDeletedClips.add(currentSysClip)
-                    }
-                    clearClipboardContent()
+                    // CRITICAL: Pinned texts MUST NOT be deleted unless unpinned!
                     context.clipsDB.deleteAll()
                     Handler(Looper.getMainLooper()).post {
                         context.toast(R.string.clear_clipboard_data)
@@ -690,27 +681,13 @@ class MyKeyboardView @JvmOverloads constructor(
 
         val clipboardManager =
             (context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager)
-        mPrimaryClipListener?.let {
-            clipboardManager.removePrimaryClipChangedListener(it)
-        }
-        val listener = ClipboardManager.OnPrimaryClipChangedListener {
-            val clipboardContent = clipboardManager.primaryClip?.getItemAt(0)?.text?.trim()?.toString()
-            if (!clipboardContent.isNullOrEmpty() && !recentlyDeletedClips.contains(clipboardContent)) {
+        clipboardManager.addPrimaryClipChangedListener {
+            val clipboardContent = clipboardManager.primaryClip?.getItemAt(0)?.text?.trim()
+            if (clipboardContent?.isNotEmpty() == true) {
                 handleClipboard()
-                ensureBackgroundThread {
-                    if (context.clipsDB.getClipWithValue(clipboardContent) == null) {
-                        context.clipsDB.insertOrUpdate(Clip(null, clipboardContent, false))
-                    }
-                    Handler(Looper.getMainLooper()).post {
-                        setupStoredClips()
-                    }
-                }
-            } else {
-                setupStoredClips()
             }
+            setupStoredClips()
         }
-        mPrimaryClipListener = listener
-        clipboardManager.addPrimaryClipChangedListener(listener)
 
         binding.apply {
             clipboardManagerClose.setOnClickListener {
@@ -740,11 +717,11 @@ class MyKeyboardView @JvmOverloads constructor(
 
     fun setupKeyboard(changedView: View? = null) {
         with(safeStorageContext) {
-            mTextColor = Color.parseColor("#1A2E22")
-            mBackgroundColor = Color.parseColor("#E7F2E7")
-            mKeyboardBackgroundColor = Color.parseColor("#E7F2E7")
-            mPrimaryColor = Color.parseColor("#00A572")
-            mStrokeColor = Color.parseColor("#D4E2D4")
+            mTextColor = Color.WHITE
+            mBackgroundColor = Color.parseColor("#111622")
+            mKeyboardBackgroundColor = Color.parseColor("#111622")
+            mPrimaryColor = Color.parseColor("#00BCD4")
+            mStrokeColor = Color.parseColor("#202737")
 
             mShowKeyBorders = true
             mUsingSystemTheme = false
@@ -752,8 +729,8 @@ class MyKeyboardView @JvmOverloads constructor(
         }
 
         val isMainKeyboard = changedView == null || changedView.id != R.id.mini_keyboard_view
-        mKeyColor = Color.parseColor("#FBFDF9")
-        mKeyColorPressed = Color.parseColor("#D8E6D8")
+        mKeyColor = Color.parseColor("#0B1626")
+        mKeyColorPressed = Color.parseColor("#162842")
         mShowKeyBorders = true
         mKeyBackground = resources.getDrawable(R.drawable.keyboard_key_selector_outlined, context.theme)
 
@@ -765,7 +742,7 @@ class MyKeyboardView @JvmOverloads constructor(
                 .applyColorFilter(mStrokeColor)
             background = previewBackground
         } else {
-            background = ColorDrawable(Color.parseColor("#E7F2E7"))
+            background = ColorDrawable(Color.parseColor("#060B14"))
         }
 
         keyboardViewBinding?.apply {
@@ -774,34 +751,33 @@ class MyKeyboardView @JvmOverloads constructor(
             toolbarIconsContainer.layoutDirection = View.LAYOUT_DIRECTION_LTR
             mToolbarHolder?.background = resources.getDrawable(R.drawable.bg_toolbar_neon, context.theme)
 
-            val toolbarIconColor = Color.parseColor("#2D483C")
-            toolbarSticker.applyColorFilter(toolbarIconColor)
-            toolbarEmoji.applyColorFilter(toolbarIconColor)
-            voiceInputButton.applyColorFilter(toolbarIconColor)
-            toolbarCursor.applyColorFilter(toolbarIconColor)
-            pinnedClipboardItems.applyColorFilter(toolbarIconColor)
-            toolbarCollapse.applyColorFilter(toolbarIconColor)
+            toolbarSticker.applyColorFilter(Color.WHITE)
+            toolbarEmoji.applyColorFilter(Color.WHITE)
+            voiceInputButton.applyColorFilter(Color.WHITE)
+            toolbarCursor.applyColorFilter(Color.WHITE)
+            pinnedClipboardItems.applyColorFilter(Color.WHITE)
+            toolbarCollapse.applyColorFilter(Color.WHITE)
 
             mToolbarHolder?.beInvisibleIf(context.isDeviceLocked)
 
             topClipboardDivider.beGone()
-            clipboardManagerTopBar.background = ColorDrawable(Color.parseColor("#E7F2E7"))
-            clipboardManagerHolder.background = ColorDrawable(Color.parseColor("#E7F2E7"))
-            clipboardManagerHolder.layoutDirection = View.LAYOUT_DIRECTION_RTL
+            clipboardManagerTopBar.background = resources.getDrawable(R.drawable.bg_toolbar_neon, context.theme)
+            clipboardManagerHolder.background = ColorDrawable(Color.parseColor("#060B14"))
+            clipboardManagerHolder.layoutDirection = View.LAYOUT_DIRECTION_LTR
 
             val isArabic = context.config.keyboardLanguage == LANGUAGE_ARABIC
             val closeLabel = if (isArabic) "أ ب ج" else "ABC"
             clipboardManagerClose.text = closeLabel
             toolsMenuClose.text = closeLabel
-            textEditorCloseText.text = closeLabel
+            textEditorClose.text = closeLabel
 
-            clipboardManagerClose.setTextColor(Color.parseColor("#1A2E22"))
-            clipboardManagerManage.applyColorFilter(Color.parseColor("#1A2E22"))
-            clipboardManagerClearAllIcon.applyColorFilter(Color.parseColor("#1A2E22"))
+            clipboardManagerClose.setTextColor(Color.parseColor("#00D2FF"))
+            clipboardManagerManage.applyColorFilter(Color.parseColor("#00BCD4"))
+            clipboardManagerClearAll.applyColorFilter(Color.parseColor("#00BCD4"))
 
-            clipboardManagerLabel.setTextColor(Color.parseColor("#1A2E22"))
-            clipboardContentPlaceholder1.setTextColor(Color.parseColor("#4A6052"))
-            clipboardContentPlaceholder2.setTextColor(Color.parseColor("#6A8072"))
+            clipboardManagerLabel.setTextColor(Color.parseColor("#00D2FF"))
+            clipboardContentPlaceholder1.setTextColor(Color.parseColor("#80A0C0"))
+            clipboardContentPlaceholder2.setTextColor(Color.parseColor("#507090"))
         }
 
         setupEmojiPalette(
@@ -963,8 +939,9 @@ class MyKeyboardView @JvmOverloads constructor(
             setupKeyBackground(key, code, canvas)
             val isCyanKey = label == "AR"
             val textColor = when {
-                key.pressed -> Color.parseColor("#1A2E22").adjustAlpha(0.6f)
-                else -> Color.parseColor("#1A2E22")
+                key.pressed -> if (isCyanKey) Color.parseColor("#8000E5FF") else Color.WHITE.adjustAlpha(0.6f)
+                isCyanKey -> Color.parseColor("#00E5FF")
+                else -> Color.WHITE
             }
 
             // Switch the character to uppercase if shift is pressed
@@ -1031,11 +1008,10 @@ class MyKeyboardView @JvmOverloads constructor(
                 }
 
                 if (code == KEYCODE_ENTER) {
-                    val enterColor = if (key.pressed) Color.parseColor("#E0FFE0") else Color.WHITE
+                    val enterColor = if (key.pressed) Color.parseColor("#8000E5FF") else Color.parseColor("#00E5FF")
                     key.icon!!.applyColorFilter(enterColor)
                     key.secondaryIcon?.applyColorFilter(enterColor.adjustAlpha(0.6f))
                 } else if (code == KEYCODE_DELETE) {
-                    key.icon!!.applyColorFilter(textColor)
                     key.icon!!.alpha = if (key.pressed) 180 else 255
                 } else if (
                     code in arrayOf(
@@ -1101,11 +1077,7 @@ class MyKeyboardView @JvmOverloads constructor(
     }
 
     private fun setupKeyBackground(key: MyKeyboard.Key, keyCode: Int, canvas: Canvas) {
-        val keyBackground = when (keyCode) {
-            KEYCODE_ENTER -> getEnterKeyBackground()
-            KEYCODE_SPACE -> getSpaceKeyBackground()
-            else -> mKeyBackground
-        } ?: return
+        val keyBackground = mKeyBackground ?: return
 
         val bounds = keyBackground.bounds
         if (key.width != bounds.right || key.height != bounds.bottom) {
@@ -1851,7 +1823,8 @@ class MyKeyboardView @JvmOverloads constructor(
             clipboardManagerHolder.visibility == View.VISIBLE ||
                 emojiPaletteHolder.visibility == View.VISIBLE ||
                 toolsMenuHolder.visibility == View.VISIBLE ||
-                textEditorHolder.visibility == View.VISIBLE
+                textEditorHolder.visibility == View.VISIBLE ||
+                numericKeypadHolder.visibility == View.VISIBLE
         } ?: false
     }
 
@@ -1861,16 +1834,28 @@ class MyKeyboardView @JvmOverloads constructor(
             emojiPaletteHolder.beGone()
             toolsMenuHolder.beGone()
             textEditorHolder.beGone()
+            numericKeypadHolder.beGone()
             suggestionsHolder.showAllInlineContentViews()
         }
     }
 
     fun openNumericKeypad() {
         closeAllPanels()
+        keyboardViewBinding?.apply {
+            val isArabic = context.config.keyboardLanguage == LANGUAGE_ARABIC
+            numKeyAbc.text = if (isArabic) "أ ب ج" else "ABC"
+            numericKeypadHolder.beVisible()
+            suggestionsHolder.hideAllInlineContentViews()
+        }
     }
 
     fun closeNumericKeypad() {
-        closeAllPanels()
+        keyboardViewBinding?.apply {
+            numericKeypadHolder.beGone()
+            if (!isAnyPanelOpen()) {
+                suggestionsHolder.showAllInlineContentViews()
+            }
+        }
     }
 
     fun closeClipboardManager() {
@@ -1883,14 +1868,9 @@ class MyKeyboardView @JvmOverloads constructor(
     }
 
     fun openClipboardManager() {
-        if (keyboardViewBinding?.clipboardManagerHolder?.visibility == View.VISIBLE) {
-            closeAllPanels()
-            return
-        }
         closeAllPanels()
         keyboardViewBinding?.apply {
-            toolbarHolder.beVisible()
-            clipboardManagerHolder.layoutDirection = View.LAYOUT_DIRECTION_RTL
+            clipboardManagerHolder.layoutDirection = View.LAYOUT_DIRECTION_LTR
             val isArabic = context.config.keyboardLanguage == LANGUAGE_ARABIC
             clipboardManagerClose.text = if (isArabic) "أ ب ج" else "ABC"
             clipboardManagerHolder.beVisible()
@@ -1900,13 +1880,8 @@ class MyKeyboardView @JvmOverloads constructor(
     }
 
     fun openToolsMenu() {
-        if (keyboardViewBinding?.toolsMenuHolder?.visibility == View.VISIBLE) {
-            closeAllPanels()
-            return
-        }
         closeAllPanels()
         keyboardViewBinding?.apply {
-            toolbarHolder.beVisible()
             val isArabic = context.config.keyboardLanguage == LANGUAGE_ARABIC
             toolsMenuClose.text = if (isArabic) "أ ب ج" else "ABC"
             toolsMenuHolder.beVisible()
@@ -1918,7 +1893,7 @@ class MyKeyboardView @JvmOverloads constructor(
         closeAllPanels()
         keyboardViewBinding?.apply {
             val isArabic = context.config.keyboardLanguage == LANGUAGE_ARABIC
-            textEditorCloseText.text = if (isArabic) "أ ب ج" else "ABC"
+            textEditorClose.text = if (isArabic) "أ ب ج" else "ABC"
             textEditorHolder.beVisible()
             suggestionsHolder.hideAllInlineContentViews()
         }
@@ -1952,31 +1927,27 @@ class MyKeyboardView @JvmOverloads constructor(
 
     private fun setupStoredClips() {
         ensureBackgroundThread {
-            if (!context.config.isClipboardInitialized) {
-                context.config.isClipboardInitialized = true
-            } else {
-                val clipboardContent = context.getCurrentClip()?.trim()
-                if (!clipboardContent.isNullOrEmpty() && !recentlyDeletedClips.contains(clipboardContent)) {
-                    if (context.clipsDB.getClipWithValue(clipboardContent) == null) {
-                        context.clipsDB.insertOrUpdate(Clip(null, clipboardContent, false))
-                    }
-                }
-            }
-
             val clips = ArrayList<ListItem>()
+            val clipboardContent = context.getCurrentClip()
+
             val pinnedClips = context.clipsDB.getPinnedClips()
             val recentClips = context.clipsDB.getRecentClips()
-
-            if (recentClips.isNotEmpty()) {
-                val section = ClipsSectionLabel(context.getString(R.string.recent_clips), false)
-                clips.add(section)
-                clips.addAll(recentClips)
-            }
 
             if (pinnedClips.isNotEmpty()) {
                 val section = ClipsSectionLabel(context.getString(R.string.pinned_clips), false)
                 clips.add(section)
                 clips.addAll(pinnedClips)
+            }
+
+            if (recentClips.isNotEmpty()) {
+                val section = ClipsSectionLabel(context.getString(R.string.recent_clips), false)
+                clips.add(section)
+                clips.addAll(recentClips)
+            } else if (clipboardContent?.isNotEmpty() == true && pinnedClips.none { it.value.trim() == clipboardContent.trim() }) {
+                val section = ClipsSectionLabel(context.getString(R.string.clipboard_current), true)
+                clips.add(section)
+                val clip = Clip(-1, clipboardContent, false)
+                clips.add(clip)
             }
 
             Handler(Looper.getMainLooper()).post {
@@ -2043,15 +2014,9 @@ class MyKeyboardView @JvmOverloads constructor(
                             context.toast(R.string.cannot_delete_pinned)
                             return
                         }
-                        val clipText = item.value.trim()
-                        recentlyDeletedClips.add(clipText)
                         ensureBackgroundThread {
                             if (item.id != null && item.id != -1L) {
                                 context.clipsDB.delete(item.id!!)
-                            }
-                            val currentSysClip = context.getCurrentClip()?.trim()
-                            if (currentSysClip == clipText) {
-                                clearClipboardContent()
                             }
                             Handler(Looper.getMainLooper()).post {
                                 setupStoredClips()
@@ -2280,11 +2245,6 @@ class MyKeyboardView @JvmOverloads constructor(
     private fun closing() {
         if (mPreviewPopup.isShowing) {
             mPreviewPopup.dismiss()
-        }
-        mPrimaryClipListener?.let {
-            val clipboardManager = (context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager)
-            clipboardManager?.removePrimaryClipChangedListener(it)
-            mPrimaryClipListener = null
         }
         removeMessages()
         dismissPopupKeyboard()

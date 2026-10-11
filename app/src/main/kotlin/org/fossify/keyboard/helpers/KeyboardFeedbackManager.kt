@@ -33,16 +33,29 @@ class KeyboardFeedbackManager(private val context: Context) {
     }
 
     /**
-     * Play keypress sound disabled completely per user request.
+     * Play keypress sound if enabled.
      */
     fun playKeypressSoundIfNeeded(code: Int) {
-        // No-op: Sound completely removed per user request
+        val soundMode = config.soundOnKeypress
+        if (soundMode == SOUND_NONE) return
+
+        val effect = when (code) {
+            MyKeyboard.KEYCODE_DELETE -> AudioManager.FX_KEYPRESS_DELETE
+            MyKeyboard.KEYCODE_ENTER -> AudioManager.FX_KEYPRESS_RETURN
+            MyKeyboard.KEYCODE_SPACE -> AudioManager.FX_KEYPRESS_SPACEBAR
+            else -> AudioManager.FX_KEYPRESS_STANDARD
+        }
+
+        when (soundMode) {
+            SOUND_SYSTEM -> audioManager.playSoundEffect(effect)
+            SOUND_ALWAYS -> audioManager.playSoundEffect(effect, 1.0f)
+        }
     }
 
     /**
-     * Perform feedback for a keypress (sound and vibration completely removed).
+     * Perform audio feedback for a keypress (vibration disabled).
      */
     fun performKeypressFeedback(view: View, keyCode: Int) {
-        // No-op: Feedback completely removed per user request
+        playKeypressSoundIfNeeded(keyCode)
     }
 }

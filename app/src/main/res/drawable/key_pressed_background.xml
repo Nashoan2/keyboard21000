@@ -6,10 +6,10 @@
         android:right="2.5dp"
         android:top="3.5dp">
         <shape android:shape="rectangle">
-            <solid android:color="#D8E6D8" />
+            <solid android:color="#162842" />
             <stroke
-                android:width="0.8dp"
-                android:color="#C6D8C6" />
+                android:width="2dp"
+                android:color="#3CE2FF" />
             <corners android:radius="8.5dp" />
         </shape>
     </item>
