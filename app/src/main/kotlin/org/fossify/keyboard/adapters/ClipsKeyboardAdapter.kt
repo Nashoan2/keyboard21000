@@ -22,7 +22,10 @@ import org.fossify.commons.extensions.getProperBackgroundColor
 import org.fossify.commons.extensions.getProperTextColor
 import org.fossify.commons.extensions.removeUnderlines
 import org.fossify.commons.extensions.toast
+import android.content.ClipData
+import android.content.ClipboardManager
 import org.fossify.commons.helpers.ensureBackgroundThread
+import org.fossify.commons.helpers.isPiePlus
 import org.fossify.keyboard.R
 import org.fossify.keyboard.databinding.ItemClipOnKeyboardBinding
 import org.fossify.keyboard.databinding.ItemSectionLabelBinding
@@ -131,6 +134,14 @@ class ClipsKeyboardAdapter(
         ensureBackgroundThread {
             if (clip.id != null && clip.id != -1L) {
                 context.clipsDB.delete(clip.id!!)
+            }
+            if (context.getCurrentClip()?.trim() == clip.value.trim()) {
+                val clipboardManager = (context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager)
+                if (isPiePlus()) {
+                    clipboardManager?.clearPrimaryClip()
+                } else {
+                    clipboardManager?.setPrimaryClip(ClipData.newPlainText("", ""))
+                }
             }
             Handler(Looper.getMainLooper()).post {
                 refreshClipsListener.refreshClips()

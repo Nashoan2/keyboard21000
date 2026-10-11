@@ -69,25 +69,7 @@ fun parseRawEmojiSpecsFile(context: Context, path: String): MutableList<EmojiDat
 }
 
 fun parseRawJsonSpecsFile(context: Context, path: String): HashMap<String, String> {
-    if (cachedVNTelexData.isNotEmpty()) {
-        return cachedVNTelexData
-    }
-
-    try {
-        val inputStream: InputStream = context.assets.open(path)
-        val jsonString = inputStream.bufferedReader().use { it.readText() }
-        val jsonData = JSONObject(jsonString)
-        val rulesObj = jsonData.getJSONObject("rules")
-        val ruleKeys = rulesObj.keys()
-        while (ruleKeys.hasNext()) {
-            val key = ruleKeys.next()
-            val value = rulesObj.getString(key)
-            cachedVNTelexData[key] = value
-        }
-    } catch (ignored: Exception) {
-        return HashMap()
-    }
-    return cachedVNTelexData
+    return HashMap()
 }
 
 data class EmojiData(

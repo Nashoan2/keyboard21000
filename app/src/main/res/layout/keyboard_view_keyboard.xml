@@ -453,6 +453,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clipToPadding="false"
+                android:layoutDirection="rtl"
                 android:paddingStart="4dp"
                 android:paddingEnd="4dp"
                 android:paddingBottom="4dp"
@@ -475,7 +476,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/toolbar_holder">
+        app:layout_constraintTop_toBottomOf="@+id/toolbar_holder">
 
         <RelativeLayout
             android:id="@+id/tools_menu_top_bar"
@@ -483,6 +484,7 @@
             android:layout_height="@dimen/toolbar_height"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
+            android:visibility="gone"
             android:gravity="center_vertical"
             android:paddingStart="@dimen/medium_margin"
             android:paddingEnd="@dimen/medium_margin">
@@ -1073,7 +1075,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar_holder">
 
-        <!-- Row 1: + | 1 | 2 | 3 | % -->
+        <!-- Row 1: - | 1 | 2 | 3 | % -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -1082,16 +1084,16 @@
             android:weightSum="100">
 
             <TextView
-                android:id="@+id/num_key_plus"
+                android:id="@+id/num_key_minus"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="15"
                 android:layout_margin="3dp"
                 android:background="@drawable/bg_key_operator"
                 android:gravity="center"
-                android:text="+"
+                android:text="-"
                 android:textColor="#FFFFFF"
-                android:textSize="24sp"
+                android:textSize="28sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -1147,7 +1149,7 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Row 2: - | 4 | 5 | 6 | ␣ -->
+        <!-- Row 2: * | 4 | 5 | 6 | ␣ -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -1156,14 +1158,14 @@
             android:weightSum="100">
 
             <TextView
-                android:id="@+id/num_key_minus"
+                android:id="@+id/num_key_multiply"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="15"
                 android:layout_margin="3dp"
                 android:background="@drawable/bg_key_operator"
                 android:gravity="center"
-                android:text="-"
+                android:text="*"
                 android:textColor="#FFFFFF"
                 android:textSize="28sp"
                 android:textStyle="bold" />
@@ -1224,7 +1226,7 @@
             </FrameLayout>
         </LinearLayout>
 
-        <!-- Row 3: * | 7 | 8 | 9 | ⌫ -->
+        <!-- Row 3: / | 7 | 8 | 9 | ⌫ -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -1233,16 +1235,16 @@
             android:weightSum="100">
 
             <TextView
-                android:id="@+id/num_key_multiply"
+                android:id="@+id/num_key_divide"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="15"
                 android:layout_margin="3dp"
                 android:background="@drawable/bg_key_operator"
                 android:gravity="center"
-                android:text="*"
+                android:text="/"
                 android:textColor="#FFFFFF"
-                android:textSize="28sp"
+                android:textSize="24sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -1301,7 +1303,7 @@
             </FrameLayout>
         </LinearLayout>
 
-        <!-- Row 4: (/ + ABC) | !?#& | 0 | (= + .) | ↵ -->
+        <!-- Row 4: ABC | !?#& | 0 | (= + .) | ↵ -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -1309,40 +1311,18 @@
             android:orientation="horizontal"
             android:weightSum="100">
 
-            <!-- Split / and ABC vertically -->
-            <LinearLayout
+            <TextView
+                android:id="@+id/num_key_abc"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="15"
-                android:orientation="vertical"
-                android:weightSum="2">
-
-                <TextView
-                    android:id="@+id/num_key_divide"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:layout_margin="2dp"
-                    android:background="@drawable/bg_key_operator"
-                    android:gravity="center"
-                    android:text="/"
-                    android:textColor="#FFFFFF"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/num_key_abc"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:layout_margin="2dp"
-                    android:background="@drawable/bg_key_abc"
-                    android:gravity="center"
-                    android:text="ABC"
-                    android:textColor="#FFFFFF"
-                    android:textSize="13sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
+                android:layout_margin="3dp"
+                android:background="@drawable/bg_key_operator"
+                android:gravity="center"
+                android:text="ABC"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/num_key_symbols"
@@ -1354,7 +1334,7 @@
                 android:gravity="center"
                 android:text="!?#&amp;"
                 android:textColor="#FFFFFF"
-                android:textSize="19sp"
+                android:textSize="18sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -1383,7 +1363,7 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:layout_margin="2dp"
+                    android:layout_margin="3dp"
                     android:background="@drawable/bg_key_neon"
                     android:gravity="center"
                     android:text="="
@@ -1396,7 +1376,7 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:layout_margin="2dp"
+                    android:layout_margin="3dp"
                     android:background="@drawable/bg_key_neon"
                     android:gravity="center"
                     android:text="."
