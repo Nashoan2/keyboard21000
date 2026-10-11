@@ -769,11 +769,11 @@ class MyKeyboardView @JvmOverloads constructor(
             val closeLabel = if (isArabic) "أ ب ج" else "ABC"
             clipboardManagerClose.text = closeLabel
             toolsMenuClose.text = closeLabel
-            textEditorClose.text = closeLabel
+            textEditorCloseText.text = closeLabel
 
             clipboardManagerClose.setTextColor(Color.parseColor("#00D2FF"))
             clipboardManagerManage.applyColorFilter(Color.parseColor("#00BCD4"))
-            clipboardManagerClearAll.applyColorFilter(Color.parseColor("#00BCD4"))
+            clipboardManagerClearAllIcon.applyColorFilter(Color.parseColor("#00BCD4"))
 
             clipboardManagerLabel.setTextColor(Color.parseColor("#00D2FF"))
             clipboardContentPlaceholder1.setTextColor(Color.parseColor("#80A0C0"))
@@ -1893,7 +1893,7 @@ class MyKeyboardView @JvmOverloads constructor(
         closeAllPanels()
         keyboardViewBinding?.apply {
             val isArabic = context.config.keyboardLanguage == LANGUAGE_ARABIC
-            textEditorClose.text = if (isArabic) "أ ب ج" else "ABC"
+            textEditorCloseText.text = if (isArabic) "أ ب ج" else "ABC"
             textEditorHolder.beVisible()
             suggestionsHolder.hideAllInlineContentViews()
         }

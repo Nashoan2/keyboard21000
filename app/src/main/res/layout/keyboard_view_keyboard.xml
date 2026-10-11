@@ -362,6 +362,19 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
+            <ImageView
+                android:id="@+id/clipboard_manager_manage"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_toStartOf="@+id/clipboard_manager_clear_all"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/bg_clip_abc"
+                android:contentDescription="@string/manage_clipboard_items"
+                android:padding="6dp"
+                android:src="@drawable/ic_tool_pencil"
+                android:visibility="gone" />
+
             <LinearLayout
                 android:id="@+id/clipboard_manager_clear_all"
                 android:layout_width="wrap_content"
@@ -375,6 +388,7 @@
                 android:paddingEnd="12dp">
 
                 <ImageView
+                    android:id="@+id/clipboard_manager_clear_all_icon"
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:layout_marginEnd="6dp"
@@ -392,11 +406,18 @@
 
         </RelativeLayout>
 
+        <View
+            android:id="@+id/top_clipboard_divider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_below="@+id/clipboard_manager_top_bar"
+            android:visibility="gone" />
+
         <RelativeLayout
             android:id="@+id/clipboard_content_holder"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@+id/clipboard_manager_top_bar">
+            android:layout_below="@+id/top_clipboard_divider">
 
             <org.fossify.commons.views.MyTextView
                 android:id="@+id/clipboard_content_placeholder_1"
@@ -1013,9 +1034,9 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
-            <!-- Col 5: Undo / Return curved arrow ↶ -->
+            <!-- Col 5: Undo / Return curved arrow ↶ (Start of line) -->
             <FrameLayout
-                android:id="@+id/editor_btn_undo"
+                android:id="@+id/editor_btn_start"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
