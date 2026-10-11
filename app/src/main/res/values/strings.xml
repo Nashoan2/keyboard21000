@@ -64,7 +64,7 @@
     <string name="tools">Tools</string>
     <string name="text_editing">Text editing</string>
     <string name="cannot_delete_pinned">Pinned texts cannot be deleted until unpinned</string>
-    <string name="pinned_clips">Pinned texts</string>
+    <string name="pinned_clips">Pinned Items 📌</string>
     <string name="recent_clips">Recent</string>
     <string name="select_all">Select all</string>
     <string name="select_text">Select</string>
@@ -84,6 +84,10 @@
     <string name="unpin_text">Unpin</string>
     <string name="text_unpinned">Text unpinned</string>
     <string name="enable_voice_typing_settings">Please enable Google Voice Typing in keyboard settings</string>
+    <string name="cursor_up">Up</string>
+    <string name="cursor_down">Down</string>
+    <string name="cursor_left">Left</string>
+    <string name="cursor_right">Right</string>
     <!--
         Haven't found some strings? There's more at
         https://github.com/FossifyOrg/Commons/tree/master/commons/src/main/res

@@ -13,7 +13,12 @@ import org.fossify.commons.extensions.applyColorFilter
 import org.fossify.commons.extensions.beVisibleIf
 import org.fossify.commons.extensions.setupViewBackground
 import org.fossify.commons.extensions.toast
+import android.content.Context
+import android.content.ClipData
+import android.content.ClipboardManager
 import org.fossify.commons.helpers.ensureBackgroundThread
+import org.fossify.commons.helpers.isPiePlus
+import org.fossify.keyboard.extensions.getCurrentClip
 import org.fossify.commons.interfaces.ItemMoveCallback
 import org.fossify.commons.interfaces.ItemTouchHelperContract
 import org.fossify.commons.interfaces.RefreshRecyclerViewListener
@@ -150,6 +155,14 @@ class ClipsActivityAdapter(
         ensureBackgroundThread {
             unpinnedToDelete.forEach { clip ->
                 activity.clipsDB.delete(clip.id!!.toLong())
+                if (activity.getCurrentClip()?.trim() == clip.value.trim()) {
+                    val clipboardManager = (activity.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager)
+                    if (isPiePlus()) {
+                        clipboardManager?.clearPrimaryClip()
+                    } else {
+                        clipboardManager?.setPrimaryClip(ClipData.newPlainText("", ""))
+                    }
+                }
             }
 
             activity.runOnUiThread {

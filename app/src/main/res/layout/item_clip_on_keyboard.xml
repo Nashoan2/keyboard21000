@@ -4,25 +4,23 @@
     android:id="@+id/clip_holder"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="4dp"
+    android:layout_margin="3dp"
     android:background="@drawable/bg_clip_card"
     android:clickable="true"
     android:focusable="true"
-    android:minHeight="48dp"
+    android:minHeight="44dp"
     android:paddingStart="8dp"
-    android:paddingTop="12dp"
+    android:paddingTop="10dp"
     android:paddingEnd="8dp"
-    android:paddingBottom="12dp">
+    android:paddingBottom="10dp">
 
-    <!-- Red pushpin indicator on top-left (matches screenshot exactly) -->
     <ImageView
         android:id="@+id/clip_pin_indicator"
-        android:layout_width="18dp"
-        android:layout_height="18dp"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
         android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
+        android:layout_centerVertical="true"
         android:layout_marginStart="4dp"
-        android:layout_marginTop="2dp"
         android:contentDescription="@string/pin_text"
         android:src="@drawable/ic_pin_red"
         android:visibility="gone"
@@ -35,13 +33,12 @@
         android:layout_centerInParent="true"
         android:ellipsize="end"
         android:gravity="center"
-        android:maxLines="4"
-        android:paddingStart="18dp"
-        android:paddingEnd="18dp"
+        android:maxLines="2"
+        android:paddingStart="22dp"
+        android:paddingEnd="6dp"
         android:textAlignment="center"
         android:textColor="#FFFFFF"
-        android:textDirection="locale"
-        android:textSize="15sp"
+        android:textSize="14sp"
         tools:text="Sample clip text" />
 
 </RelativeLayout>
