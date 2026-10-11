@@ -211,12 +211,13 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/toolbar_holder">
+        app:layout_constraintTop_toBottomOf="@+id/toolbar_holder">
 
         <RelativeLayout
             android:id="@+id/emoji_palette_top_bar"
             android:layout_width="match_parent"
             android:layout_height="@dimen/toolbar_height"
+            android:visibility="gone"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
             android:gravity="center_vertical">
@@ -319,23 +320,23 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/toolbar_holder">
+        app:layout_constraintTop_toBottomOf="@+id/toolbar_holder">
 
         <RelativeLayout
             android:id="@+id/clipboard_manager_top_bar"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/toolbar_height"
-            android:layout_marginStart="3dp"
-            android:layout_marginEnd="3dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="4dp"
+            android:layout_height="36dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="2dp"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:background="@drawable/bg_toolbar_neon"
+            android:background="@android:color/transparent"
             android:layoutDirection="ltr"
             android:gravity="center_vertical"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp">
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp">
 
             <TextView
                 android:id="@+id/clipboard_manager_close"
@@ -778,12 +779,13 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/toolbar_holder">
+        app:layout_constraintTop_toBottomOf="@+id/toolbar_holder">
 
         <RelativeLayout
             android:id="@+id/text_editor_top_bar"
             android:layout_width="match_parent"
             android:layout_height="@dimen/toolbar_height"
+            android:visibility="gone"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
             android:gravity="center_vertical"

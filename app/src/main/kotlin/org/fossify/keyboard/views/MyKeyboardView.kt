@@ -383,8 +383,11 @@ class MyKeyboardView @JvmOverloads constructor(
             }
 
             toolbarEmoji.setOnClickListener {
-                vibrateIfNeeded()
-                openEmojiPalette()
+                if (emojiPaletteHolder.visibility == View.VISIBLE) {
+                    closeAllPanels()
+                } else {
+                    openEmojiPalette()
+                }
             }
 
             voiceInputButton.setOnLongClickListener { context.toast(R.string.switch_to_voice_typing); true }
@@ -408,14 +411,20 @@ class MyKeyboardView @JvmOverloads constructor(
             }
 
             toolbarCursor.setOnClickListener {
-                vibrateIfNeeded()
-                openTextEditor()
+                if (textEditorHolder.visibility == View.VISIBLE) {
+                    closeAllPanels()
+                } else {
+                    openTextEditor()
+                }
             }
 
             pinnedClipboardItems.setOnLongClickListener { context.toast(R.string.clipboard); true; }
             pinnedClipboardItems.setOnClickListener {
-                vibrateIfNeeded()
-                openClipboardManager()
+                if (clipboardManagerHolder.visibility == View.VISIBLE) {
+                    closeAllPanels()
+                } else {
+                    openClipboardManager()
+                }
             }
 
             toolbarCollapse.setOnClickListener {
