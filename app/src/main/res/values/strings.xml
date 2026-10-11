@@ -64,7 +64,7 @@
     <string name="tools">Tools</string>
     <string name="text_editing">Text editing</string>
     <string name="cannot_delete_pinned">Pinned texts cannot be deleted until unpinned</string>
-    <string name="pinned_clips">Pinned texts</string>
+    <string name="pinned_clips">Pinned Items 📌</string>
     <string name="recent_clips">Recent</string>
     <string name="select_all">Select all</string>
     <string name="select_text">Select</string>

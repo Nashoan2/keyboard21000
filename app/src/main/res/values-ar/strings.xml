@@ -59,8 +59,8 @@
     <string name="tools">الأدوات</string>
     <string name="text_editing">تحرير النص</string>
     <string name="cannot_delete_pinned">لا يمكن مسح النصوص المثبتة إلا بعد إلغاء التثبيت</string>
-    <string name="pinned_clips">النصوص المثبتة</string>
-    <string name="recent_clips">النصوص الأخيرة</string>
+    <string name="pinned_clips">العناصر المثبتة 📌</string>
+    <string name="recent_clips">الأحدث</string>
     <string name="select_all">تحديد الكل</string>
     <string name="select_text">تحديد</string>
     <string name="copy">نسخ</string>

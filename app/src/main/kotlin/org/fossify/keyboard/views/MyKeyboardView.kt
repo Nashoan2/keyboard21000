@@ -1933,21 +1933,21 @@ class MyKeyboardView @JvmOverloads constructor(
             val pinnedClips = context.clipsDB.getPinnedClips()
             val recentClips = context.clipsDB.getRecentClips()
 
-            if (pinnedClips.isNotEmpty()) {
-                val section = ClipsSectionLabel(context.getString(R.string.pinned_clips), false)
-                clips.add(section)
-                clips.addAll(pinnedClips)
-            }
-
             if (recentClips.isNotEmpty()) {
                 val section = ClipsSectionLabel(context.getString(R.string.recent_clips), false)
                 clips.add(section)
                 clips.addAll(recentClips)
             } else if (clipboardContent?.isNotEmpty() == true && pinnedClips.none { it.value.trim() == clipboardContent.trim() }) {
-                val section = ClipsSectionLabel(context.getString(R.string.clipboard_current), true)
+                val section = ClipsSectionLabel(context.getString(R.string.recent_clips), true)
                 clips.add(section)
                 val clip = Clip(-1, clipboardContent, false)
                 clips.add(clip)
+            }
+
+            if (pinnedClips.isNotEmpty()) {
+                val section = ClipsSectionLabel(context.getString(R.string.pinned_clips), false)
+                clips.add(section)
+                clips.addAll(pinnedClips)
             }
 
             Handler(Looper.getMainLooper()).post {
