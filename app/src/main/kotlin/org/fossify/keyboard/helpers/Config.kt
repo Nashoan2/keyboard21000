@@ -20,8 +20,8 @@ class Config(context: Context) : BaseConfig(context) {
         set(soundOnKeypress) = prefs.edit().putInt(SOUND_ON_KEYPRESS, SOUND_NONE).apply()
 
     var isClipboardInitialized: Boolean
-        get() = prefs.getBoolean("is_clipboard_initialized", false)
-        set(value) = prefs.edit().putBoolean("is_clipboard_initialized", value).apply()
+        get() = prefs.getBoolean("is_clipboard_initialized_clean", false)
+        set(value) = prefs.edit().putBoolean("is_clipboard_initialized_clean", value).apply()
 
     var showPopupOnKeypress: Boolean
         get() = prefs.getBoolean(SHOW_POPUP_ON_KEYPRESS, true)

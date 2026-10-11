@@ -3,10 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingStart="10dp"
-    android:paddingTop="10dp"
-    android:paddingEnd="10dp"
-    android:paddingBottom="4dp">
+    android:paddingStart="12dp"
+    android:paddingTop="12dp"
+    android:paddingEnd="12dp"
+    android:paddingBottom="6dp">
 
     <org.fossify.commons.views.MyTextView
         android:id="@+id/clips_section_label"
@@ -14,8 +14,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
-        android:textColor="#FFFFFF"
-        android:textSize="15sp"
+        android:textColor="#A0ABC0"
+        android:textSize="14sp"
         android:textStyle="bold"
         tools:text="الأحدث" />
 

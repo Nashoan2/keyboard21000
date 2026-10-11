@@ -130,15 +130,15 @@
             app:keyLabel="123"
             app:keyWidth="13%p" />
         <Key
-            app:code="-6"
-            app:keyLabel="AR"
-            app:keyWidth="11%p" />
-        <Key
             app:code="1569"
             app:keyLabel="ء"
-            app:keyWidth="9.0909%p"
+            app:keyWidth="10%p"
             app:popupCharacters="ئؤء"
             app:popupKeyboard="@xml/keyboard_popup_template" />
+        <Key
+            app:code="-6"
+            app:keyLabel="AR"
+            app:keyWidth="10.0909%p" />
         <Key
             app:code="32"
             app:isRepeatable="true"

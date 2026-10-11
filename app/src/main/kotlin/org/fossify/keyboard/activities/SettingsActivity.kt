@@ -123,13 +123,12 @@ class SettingsActivity : SimpleActivity() {
     }
 
     private fun setupVibrateOnKeypress() {
-        binding.settingsVibrateOnKeypressHolder.beGone()
+        binding.settingsVibrateOnKeypressHolder.visibility = android.view.View.GONE
     }
 
     private fun setupSoundOnKeypress() {
-        binding.settingsSoundOnKeypressHolder.beGone()
+        binding.settingsSoundOnKeypressHolder.visibility = android.view.View.GONE
     }
-
 
     private fun getSoundOnKeypressText(mode: Int): String = getString(
         when (mode) {

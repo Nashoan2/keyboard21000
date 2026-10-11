@@ -93,8 +93,7 @@ import org.fossify.keyboard.helpers.EmojiData
 import org.fossify.keyboard.helpers.KeyboardFeedbackManager
 import org.fossify.keyboard.helpers.LANGUAGE_ARABIC
 import org.fossify.keyboard.helpers.LANGUAGE_TURKISH_Q
-import org.fossify.keyboard.helpers.LANGUAGE_VIETNAMESE_TELEX
-import org.fossify.keyboard.helpers.LANGUAGE_VN_TELEX
+import org.fossify.keyboard.helpers.ClipsHelper
 import org.fossify.keyboard.helpers.MAX_KEYS_PER_MINI_ROW
 import org.fossify.keyboard.helpers.MyKeyboard
 import org.fossify.keyboard.helpers.MyKeyboard.Companion.KEYCODE_DELETE
@@ -108,10 +107,8 @@ import org.fossify.keyboard.helpers.MyKeyboard.Companion.KEYCODE_SPACE
 import org.fossify.keyboard.helpers.MyKeyboard.Companion.KEYCODE_SYMBOLS_MODE_CHANGE
 import org.fossify.keyboard.helpers.RECENTLY_USED_EMOJIS
 import org.fossify.keyboard.helpers.ShiftState
-import org.fossify.keyboard.helpers.cachedVNTelexData
 import org.fossify.keyboard.helpers.getCategoryIconRes
 import org.fossify.keyboard.helpers.parseRawEmojiSpecsFile
-import org.fossify.keyboard.helpers.parseRawJsonSpecsFile
 import org.fossify.keyboard.interfaces.OnKeyboardActionListener
 import org.fossify.keyboard.interfaces.RefreshClipsListener
 import org.fossify.keyboard.models.Clip
@@ -378,8 +375,11 @@ class MyKeyboardView @JvmOverloads constructor(
             mTextEditorHolder = textEditorHolder
 
             toolbarSticker.setOnClickListener {
-                vibrateIfNeeded()
-                openToolsMenu()
+                if (toolsMenuHolder.visibility == View.VISIBLE) {
+                    closeAllPanels()
+                } else {
+                    openToolsMenu()
+                }
             }
 
             toolbarEmoji.setOnClickListener {
@@ -438,15 +438,23 @@ class MyKeyboardView @JvmOverloads constructor(
             }
 
             clipboardManagerClearAll.setOnClickListener {
-                vibrateIfNeeded()
                 ensureBackgroundThread {
-                    // CRITICAL: Pinned texts MUST NOT be deleted unless unpinned!
+                    val unpinned = context.clipsDB.getRecentClips()
+                    for (clip in unpinned) {
+                        ClipsHelper.addDeletedText(clip.value)
+                        ClipsHelper.clearSystemClipboardIfMatches(context, clip.value)
+                    }
                     context.clipsDB.deleteAll()
                     Handler(Looper.getMainLooper()).post {
                         context.toast(R.string.clear_clipboard_data)
                         setupStoredClips()
                     }
                 }
+            }
+
+            clipboardManagerCollapse.setOnClickListener {
+                closeAllPanels()
+                (context as? android.inputmethodservice.InputMethodService)?.requestHideSelf(0)
             }
 
             // Tools Menu actions (Image 90)
@@ -679,15 +687,7 @@ class MyKeyboardView @JvmOverloads constructor(
             })
         }
 
-        val clipboardManager =
-            (context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager)
-        clipboardManager.addPrimaryClipChangedListener {
-            val clipboardContent = clipboardManager.primaryClip?.getItemAt(0)?.text?.trim()
-            if (clipboardContent?.isNotEmpty() == true) {
-                handleClipboard()
-            }
-            setupStoredClips()
-        }
+
 
         binding.apply {
             clipboardManagerClose.setOnClickListener {
@@ -769,11 +769,11 @@ class MyKeyboardView @JvmOverloads constructor(
             val closeLabel = if (isArabic) "أ ب ج" else "ABC"
             clipboardManagerClose.text = closeLabel
             toolsMenuClose.text = closeLabel
-            textEditorCloseText.text = closeLabel
+            textEditorClose.text = closeLabel
 
             clipboardManagerClose.setTextColor(Color.parseColor("#00D2FF"))
             clipboardManagerManage.applyColorFilter(Color.parseColor("#00BCD4"))
-            clipboardManagerClearAllIcon.applyColorFilter(Color.parseColor("#00BCD4"))
+            clipboardManagerClearAll.applyColorFilter(Color.parseColor("#00BCD4"))
 
             clipboardManagerLabel.setTextColor(Color.parseColor("#00D2FF"))
             clipboardContentPlaceholder1.setTextColor(Color.parseColor("#80A0C0"))
@@ -785,11 +785,6 @@ class MyKeyboardView @JvmOverloads constructor(
             backgroundColor = mBackgroundColor,
             textColor = mTextColor
         )
-        if (context.config.keyboardLanguage == LANGUAGE_VIETNAMESE_TELEX) {
-            setupLanguageTelex()
-        } else {
-            cachedVNTelexData.clear()
-        }
         setupStoredClips()
     }
 
@@ -1871,11 +1866,13 @@ class MyKeyboardView @JvmOverloads constructor(
         closeAllPanels()
         keyboardViewBinding?.apply {
             clipboardManagerHolder.layoutDirection = View.LAYOUT_DIRECTION_LTR
+            clipsList.layoutDirection = View.LAYOUT_DIRECTION_RTL
             val isArabic = context.config.keyboardLanguage == LANGUAGE_ARABIC
             clipboardManagerClose.text = if (isArabic) "أ ب ج" else "ABC"
             clipboardManagerHolder.beVisible()
             suggestionsHolder.hideAllInlineContentViews()
         }
+        syncClipboard()
         setupStoredClips()
     }
 
@@ -1893,7 +1890,7 @@ class MyKeyboardView @JvmOverloads constructor(
         closeAllPanels()
         keyboardViewBinding?.apply {
             val isArabic = context.config.keyboardLanguage == LANGUAGE_ARABIC
-            textEditorCloseText.text = if (isArabic) "أ ب ج" else "ABC"
+            textEditorClose.text = if (isArabic) "أ ب ج" else "ABC"
             textEditorHolder.beVisible()
             suggestionsHolder.hideAllInlineContentViews()
         }
@@ -1925,29 +1922,89 @@ class MyKeyboardView @JvmOverloads constructor(
         return true
     }
 
-    private fun setupStoredClips() {
+    private var mPrimaryClipChangedListener: ClipboardManager.OnPrimaryClipChangedListener? = null
+
+    fun registerClipboardListener() {
+        if (mPrimaryClipChangedListener != null) return
+        try {
+            val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager ?: return
+            mPrimaryClipChangedListener = ClipboardManager.OnPrimaryClipChangedListener {
+                syncClipboard()
+            }
+            cm.addPrimaryClipChangedListener(mPrimaryClipChangedListener)
+        } catch (ignored: Exception) {
+        }
+    }
+
+    fun unregisterClipboardListener() {
+        try {
+            val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager ?: return
+            mPrimaryClipChangedListener?.let { cm.removePrimaryClipChangedListener(it) }
+            mPrimaryClipChangedListener = null
+        } catch (ignored: Exception) {
+        }
+    }
+
+    fun syncClipboard() {
+        try {
+            if (!context.config.isClipboardInitialized) {
+                context.config.isClipboardInitialized = true
+                val existing = context.getCurrentClip()?.trim()
+                if (!existing.isNullOrEmpty()) {
+                    ClipsHelper.addDeletedText(existing)
+                }
+                setupStoredClips()
+                return
+            }
+
+            val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager ?: return
+            val clip = cm.primaryClip
+            if (clip != null && clip.itemCount > 0) {
+                val clipText = clip.getItemAt(0)?.text?.toString()?.trim()
+                if (!clipText.isNullOrEmpty()) {
+                    if (ClipsHelper.isDeletedText(clipText)) {
+                        return
+                    }
+                    ensureBackgroundThread {
+                        if (context.clipsDB.getClipWithValue(clipText) == null) {
+                            val newClip = Clip(null, clipText, isPinned = false)
+                            context.clipsDB.insertOrUpdate(newClip)
+                            Handler(Looper.getMainLooper()).post {
+                                handleClipboard()
+                                setupStoredClips()
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (ignored: Exception) {
+        }
+    }
+
+    fun setupStoredClips() {
+        if (!context.config.isClipboardInitialized) {
+            context.config.isClipboardInitialized = true
+            val existing = context.getCurrentClip()?.trim()
+            if (!existing.isNullOrEmpty()) {
+                ClipsHelper.addDeletedText(existing)
+            }
+        }
+
         ensureBackgroundThread {
             val clips = ArrayList<ListItem>()
-            val clipboardContent = context.getCurrentClip()
-
             val pinnedClips = context.clipsDB.getPinnedClips()
             val recentClips = context.clipsDB.getRecentClips()
-
-            if (recentClips.isNotEmpty()) {
-                val section = ClipsSectionLabel(context.getString(R.string.recent_clips), false)
-                clips.add(section)
-                clips.addAll(recentClips)
-            } else if (clipboardContent?.isNotEmpty() == true && pinnedClips.none { it.value.trim() == clipboardContent.trim() }) {
-                val section = ClipsSectionLabel(context.getString(R.string.recent_clips), true)
-                clips.add(section)
-                val clip = Clip(-1, clipboardContent, false)
-                clips.add(clip)
-            }
 
             if (pinnedClips.isNotEmpty()) {
                 val section = ClipsSectionLabel(context.getString(R.string.pinned_clips), false)
                 clips.add(section)
                 clips.addAll(pinnedClips)
+            }
+
+            if (recentClips.isNotEmpty()) {
+                val section = ClipsSectionLabel(context.getString(R.string.recent_clips), false)
+                clips.add(section)
+                clips.addAll(recentClips)
             }
 
             Handler(Looper.getMainLooper()).post {
@@ -2014,6 +2071,8 @@ class MyKeyboardView @JvmOverloads constructor(
                             context.toast(R.string.cannot_delete_pinned)
                             return
                         }
+                        ClipsHelper.addDeletedText(item.value)
+                        ClipsHelper.clearSystemClipboardIfMatches(context, item.value)
                         ensureBackgroundThread {
                             if (item.id != null && item.id != -1L) {
                                 context.clipsDB.delete(item.id!!)
@@ -2114,12 +2173,7 @@ class MyKeyboardView @JvmOverloads constructor(
         }
     }
 
-    // For Vietnamese - Telex
-    private fun setupLanguageTelex() {
-        ensureBackgroundThread {
-            parseRawJsonSpecsFile(context, LANGUAGE_VN_TELEX)
-        }
-    }
+
 
     private fun prepareEmojiCategories(emojis: List<EmojiData>): Map<String, List<EmojiData>> {
         val recentEmojis = context.config.recentlyUsedEmojis
@@ -2262,6 +2316,8 @@ class MyKeyboardView @JvmOverloads constructor(
 
     public override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
+        unregisterClipboardListener()
+        removeMessages()
         closing()
     }
 

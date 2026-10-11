@@ -124,7 +124,6 @@ import org.fossify.keyboard.helpers.SHOW_KEY_BORDERS
 import org.fossify.keyboard.helpers.SHOW_NUMBERS_ROW
 import org.fossify.keyboard.helpers.ShiftState
 import org.fossify.keyboard.helpers.VOICE_INPUT_METHOD
-import org.fossify.keyboard.helpers.cachedVNTelexData
 import org.fossify.keyboard.interfaces.OnKeyboardActionListener
 import org.fossify.keyboard.views.MyKeyboardView
 import java.io.ByteArrayOutputStream
@@ -179,8 +178,24 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
     override fun onStartInputView(editorInfo: EditorInfo?, restarting: Boolean) {
         super.onStartInputView(editorInfo, restarting)
         updateBackgroundColors()
+        keyboardView?.registerClipboardListener()
+        keyboardView?.syncClipboard()
         binding.keyboardHolder.post {
             ViewCompat.requestApplyInsets(binding.keyboardHolder)
+        }
+    }
+
+    override fun onFinishInputView(finishingInput: Boolean) {
+        super.onFinishInputView(finishingInput)
+        keyboardView?.unregisterClipboardListener()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        keyboardView?.unregisterClipboardListener()
+        try {
+            safeStorageContext.getSharedPrefs().unregisterOnSharedPreferenceChangeListener(this)
+        } catch (ignored: Exception) {
         }
     }
 
