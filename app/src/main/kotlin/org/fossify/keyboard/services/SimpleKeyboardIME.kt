@@ -208,7 +208,9 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
             keyboard = createNewKeyboard()
             keyboard?.let { keyboardView?.setKeyboard(it) }
             if (inputTypeClass == TYPE_CLASS_NUMBER || inputTypeClass == TYPE_CLASS_PHONE) {
-                keyboardView?.openNumericKeypad()
+                keyboardMode = KEYBOARD_SYMBOLS
+                keyboard = constructKeyboard(R.xml.keys_symbols, enterKeyType)
+                keyboardView?.setKeyboard(keyboard!!)
             }
         }
         attribute?.let { keyboardView?.setEditorInfo(it) }
@@ -324,7 +326,6 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
             }
 
             MyKeyboard.KEYCODE_SYMBOLS_MODE_CHANGE -> {
-                keyboardView?.closeNumericKeypad()
                 val keyboardXML = if (keyboardMode == KEYBOARD_SYMBOLS || keyboardMode == KEYBOARD_SYMBOLS_SHIFT) {
                     keyboardMode = KEYBOARD_SYMBOLS_ALT
                     R.xml.keys_symbols_alt
@@ -338,11 +339,13 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
             }
 
             MyKeyboard.KEYCODE_MODE_CHANGE -> {
+                keyboardView?.closeAllPanels()
                 if (keyboardMode == KEYBOARD_LETTERS) {
-                    keyboardView?.openNumericKeypad()
+                    keyboardMode = KEYBOARD_SYMBOLS
+                    keyboard = constructKeyboard(R.xml.keys_symbols, enterKeyType)
+                    keyboardView!!.setKeyboard(keyboard!!)
                 } else {
                     keyboardMode = KEYBOARD_LETTERS
-                    keyboardView?.closeAllPanels()
                     val keyboardXml = getKeyboardLayoutXML()
                     keyboard = constructKeyboard(keyboardXml, enterKeyType)
                     keyboardView!!.setKeyboard(keyboard!!)
@@ -582,10 +585,17 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
 
     override fun onUpdateSelection(oldSelStart: Int, oldSelEnd: Int, newSelStart: Int, newSelEnd: Int, candidatesStart: Int, candidatesEnd: Int) {
         super.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd)
-        if (newSelStart == newSelEnd) {
-            keyboardView?.closeClipboardManager()
-        }
         updateShiftKeyState()
+    }
+
+    override fun onFinishInputView(finishingInput: Boolean) {
+        super.onFinishInputView(finishingInput)
+        keyboardView?.closeAllPanels()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        keyboardView?.closeAllPanels()
     }
 
     override fun onUpdateCursorAnchorInfo(cursorAnchorInfo: CursorAnchorInfo?) {

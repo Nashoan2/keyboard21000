@@ -131,11 +131,13 @@ class ClipsKeyboardAdapter(
             context.toast(R.string.cannot_delete_pinned)
             return
         }
+        val clipText = clip.value.trim()
+        org.fossify.keyboard.views.MyKeyboardView.recentlyDeletedClips.add(clipText)
         ensureBackgroundThread {
             if (clip.id != null && clip.id != -1L) {
                 context.clipsDB.delete(clip.id!!)
             }
-            if (context.getCurrentClip()?.trim() == clip.value.trim()) {
+            if (context.getCurrentClip()?.trim() == clipText) {
                 val clipboardManager = (context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager)
                 if (isPiePlus()) {
                     clipboardManager?.clearPrimaryClip()
@@ -204,7 +206,7 @@ class ClipsKeyboardAdapter(
         ItemSectionLabelBinding.bind(view).apply {
             clipsSectionLabel.apply {
                 text = sectionLabel.value
-                setTextColor(Color.parseColor("#A0ABC0"))
+                setTextColor(Color.parseColor("#4A6052"))
             }
             clipsSectionIcon.visibility = View.GONE
         }
