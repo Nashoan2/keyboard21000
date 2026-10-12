@@ -67,6 +67,8 @@ class SettingsActivity : SimpleActivity() {
         setupSentencesCapitalization()
         setupShowNumbersRow()
         setupVoiceInputMethod()
+        setupBackupClips()
+        setupRestoreClips()
 
         binding.apply {
             updateTextColors(settingsNestedScrollview)
@@ -77,7 +79,8 @@ class SettingsActivity : SimpleActivity() {
                 settingsLayoutAppearanceLabel,
                 settingsKeypressLabel,
                 settingsTypingInputLabel,
-                settingsClipboardSettingsLabel
+                settingsClipboardSettingsLabel,
+                settingsBackupRestoreLabel
             ).forEach {
                 it.setTextColor(getProperPrimaryColor())
             }
@@ -309,6 +312,24 @@ class SettingsActivity : SimpleActivity() {
                         getCurrentVoiceInputMethod(inputMethods)?.first?.loadLabel(packageManager)
                             ?: getString(R.string.none)
                 }
+            }
+        }
+    }
+
+    private fun setupBackupClips() {
+        binding.settingsBackupClipsHolder.setOnClickListener {
+            Intent(this, ManageClipboardItemsActivity::class.java).apply {
+                putExtra("action_backup", true)
+                startActivity(this)
+            }
+        }
+    }
+
+    private fun setupRestoreClips() {
+        binding.settingsRestoreClipsHolder.setOnClickListener {
+            Intent(this, ManageClipboardItemsActivity::class.java).apply {
+                putExtra("action_restore", true)
+                startActivity(this)
             }
         }
     }

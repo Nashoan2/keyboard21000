@@ -84,6 +84,11 @@
     <string name="unpin_text">Unpin</string>
     <string name="text_unpinned">Text unpinned</string>
     <string name="enable_voice_typing_settings">Please enable Google Voice Typing in keyboard settings</string>
+    <string name="backup_and_restore">Backup and restore</string>
+    <string name="backup_clipboard_items">Backup saved texts</string>
+    <string name="backup_clipboard_items_summary">Export and save all clips to a backup file</string>
+    <string name="restore_clipboard_items">Restore saved texts</string>
+    <string name="restore_clipboard_items_summary">Import saved clips from a backup file</string>
     <!--
         Haven't found some strings? There's more at
         https://github.com/FossifyOrg/Commons/tree/master/commons/src/main/res

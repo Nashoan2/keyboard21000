@@ -38,8 +38,13 @@ class ManageClipboardItemsActivity : SimpleActivity(), RefreshRecyclerViewListen
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         setupOptionsMenu()
-        updateTextColors(binding.suggestionsItemsHolder)
         updateClips()
+
+        if (intent.getBooleanExtra("action_backup", false)) {
+            exportClips()
+        } else if (intent.getBooleanExtra("action_restore", false)) {
+            importClips()
+        }
 
         binding.apply {
             setupEdgeToEdge(padBottomSystem = listOf(clipboardItemsList))

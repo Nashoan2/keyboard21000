@@ -27,9 +27,13 @@
     <string name="app_launcher_name">لوحة المفاتيح</string>
     <string name="clipboard">الحافظة</string>
     <string name="clipboard_recent">الأحدث</string>
-    <string name="pin_text">ثبت النص</string>
-    <string name="export_clipboard_items">تصدير عناصر الحافظة</string>
-    <string name="import_clipboard_items">استيراد عناصر الحافظة</string>
+    <string name="export_clipboard_items">نسخة احتياطية للنصوص المحفوظة (تصدير)</string>
+    <string name="import_clipboard_items">استعادة النصوص المحفوظة (استيراد)</string>
+    <string name="backup_and_restore">النسخ الاحتياطي والاستعادة</string>
+    <string name="backup_clipboard_items">نسخة احتياطية للنصوص المحفوظة</string>
+    <string name="backup_clipboard_items_summary">تصدير وحفظ جميع النصوص في ملف خارجي</string>
+    <string name="restore_clipboard_items">استعادة النصوص المحفوظة</string>
+    <string name="restore_clipboard_items_summary">استيراد النصوص المحفوظة من ملف نسخة احتياطية</string>
     <string name="keycode_delete">حذف</string>
     <string name="layout_and_appearance">التصميم والمظهر</string>
     <string name="keypress">ضغطة زر</string>
