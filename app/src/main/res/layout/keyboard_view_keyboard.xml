@@ -20,6 +20,7 @@
         android:layout_marginBottom="4dp"
         android:layoutDirection="ltr"
         android:background="@drawable/bg_toolbar_neon"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/keyboard_view"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
@@ -209,7 +210,11 @@
         style="@style/MyKeyboardView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginStart="3dp"
+        android:layout_marginEnd="3dp"
+        android:layout_marginBottom="2dp"
         android:background="@color/theme_dark_background_color"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar_holder"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -780,7 +785,7 @@
         </LinearLayout>
     </RelativeLayout>
 
-    <!-- Text Editing Panel (Image 91) -->
+    <!-- Text Editing Panel matching المؤشر.png exactly (3 rows x 5 columns) -->
     <RelativeLayout
         android:id="@+id/text_editor_holder"
         android:layout_width="match_parent"
@@ -788,7 +793,12 @@
         android:clickable="true"
         android:focusable="true"
         android:visibility="gone"
-        android:background="@color/theme_dark_background_color"
+        android:background="#060B14"
+        android:layoutDirection="ltr"
+        android:paddingStart="3dp"
+        android:paddingTop="3dp"
+        android:paddingEnd="3dp"
+        android:paddingBottom="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -797,282 +807,263 @@
         <RelativeLayout
             android:id="@+id/text_editor_top_bar"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/toolbar_height"
-            android:visibility="gone"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:gravity="center_vertical"
-            android:paddingStart="@dimen/medium_margin"
-            android:paddingEnd="@dimen/medium_margin">
-
-            <TextView
-                android:id="@+id/text_editor_close"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:background="@drawable/bg_clip_abc"
-                android:paddingStart="14dp"
-                android:paddingTop="6dp"
-                android:paddingEnd="14dp"
-                android:paddingBottom="6dp"
-                android:text="@string/abc"
-                android:textColor="#FFFFFF"
-                android:textSize="13sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/text_editor_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:text="@string/text_editing"
-                android:textColor="#E0E6ED"
-                android:textSize="@dimen/big_text_size"
-                android:textStyle="bold" />
-
-        </RelativeLayout>
+            android:layout_height="0dp"
+            android:visibility="gone" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@+id/text_editor_top_bar"
-            android:orientation="horizontal"
-            android:paddingStart="8dp"
-            android:paddingTop="6dp"
-            android:paddingEnd="8dp"
-            android:paddingBottom="8dp"
-            android:weightSum="10">
+            android:orientation="vertical"
+            android:weightSum="3">
 
-            <!-- Direction D-Pad (Navigation cluster) -->
+            <!-- ROW 1: [ حافظة النصوص ] | [ ⌃ ] | [ الكل ] | [ نسخ ] | [ ⌫ ] -->
             <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="5"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:weightSum="3">
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginBottom="3dp"
+                android:orientation="horizontal"
+                android:weightSum="5">
 
-                <!-- Up -->
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
+                <!-- 1. حافظة النصوص -->
+                <TextView
+                    android:id="@+id/cursor_btn_clipboard"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:gravity="center">
-
-                    <ImageButton
-                        android:id="@+id/editor_btn_up"
-                        android:layout_width="54dp"
-                        android:layout_height="match_parent"
-                        android:layout_gravity="center"
-                        android:layout_margin="3dp"
-                        android:background="@drawable/bg_editor_key"
-                        android:contentDescription="@string/typing_and_input"
-                        android:src="@drawable/ic_chevron_up_cyan" />
-                </FrameLayout>
-
-                <!-- Left, Center (Select), Right -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:orientation="horizontal"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:background="@drawable/bg_cursor_panel_key"
                     android:gravity="center"
-                    android:weightSum="3">
+                    android:text="حافظة\nالنصوص"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
 
-                    <ImageButton
-                        android:id="@+id/editor_btn_left"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_margin="3dp"
-                        android:background="@drawable/bg_editor_key"
-                        android:contentDescription="@string/typing_and_input"
-                        android:src="@drawable/ic_chevron_left_cyan" />
+                <!-- 2. ⌃ (Up) -->
+                <ImageView
+                    android:id="@+id/cursor_btn_up"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:background="@drawable/bg_cursor_panel_key"
+                    android:scaleType="centerInside"
+                    android:contentDescription="@string/up"
+                    android:src="@drawable/ic_chevron_up_cyan" />
+
+                <!-- 3. الكل (Select All) -->
+                <TextView
+                    android:id="@+id/cursor_btn_select_all"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:background="@drawable/bg_cursor_panel_key"
+                    android:gravity="center"
+                    android:text="الكل"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <!-- 4. نسخ (Copy) -->
+                <TextView
+                    android:id="@+id/cursor_btn_copy"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:background="@drawable/bg_cursor_panel_key"
+                    android:gravity="center"
+                    android:text="نسخ"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <!-- 5. ⌫ (Backspace) -->
+                <ImageView
+                    android:id="@+id/cursor_btn_backspace"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:background="@drawable/bg_cursor_panel_key"
+                    android:scaleType="centerInside"
+                    android:contentDescription="@string/delete"
+                    android:src="@drawable/ic_backspace_cyan" />
+            </LinearLayout>
+
+            <!-- ROW 2: [ ‹ ] | [ تحديد ] | [ › ] | [ قص ] | [ ␣ ] -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginBottom="3dp"
+                android:orientation="horizontal"
+                android:weightSum="5">
+
+                <!-- 1. ‹ (Left) -->
+                <ImageView
+                    android:id="@+id/cursor_btn_left"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:background="@drawable/bg_cursor_panel_key"
+                    android:scaleType="centerInside"
+                    android:contentDescription="@string/left"
+                    android:src="@drawable/ic_chevron_left_cyan" />
+
+                <!-- 2. تحديد (Select) -->
+                <TextView
+                    android:id="@+id/cursor_btn_select"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:background="@drawable/bg_cursor_panel_key"
+                    android:gravity="center"
+                    android:text="تحديد"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <!-- 3. › (Right) -->
+                <ImageView
+                    android:id="@+id/cursor_btn_right"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:background="@drawable/bg_cursor_panel_key"
+                    android:scaleType="centerInside"
+                    android:contentDescription="@string/right"
+                    android:src="@drawable/ic_chevron_right_cyan" />
+
+                <!-- 4. قص (Cut) -->
+                <TextView
+                    android:id="@+id/cursor_btn_cut"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:background="@drawable/bg_cursor_panel_key"
+                    android:gravity="center"
+                    android:text="قص"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <!-- 5. ␣ (Space) -->
+                <ImageView
+                    android:id="@+id/cursor_btn_space"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:background="@drawable/bg_cursor_panel_key"
+                    android:scaleType="centerInside"
+                    android:contentDescription="@string/keycode_space"
+                    android:src="@drawable/ic_space_cyan" />
+            </LinearLayout>
+
+            <!-- ROW 3: [ ABC ] | [ ⌄ ] | [ إنهاء ] | [ لصق ] | [ ↶ ] -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:weightSum="5">
+
+                <!-- 1. ABC -->
+                <FrameLayout
+                    android:id="@+id/cursor_btn_abc_holder"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:background="@drawable/bg_cursor_panel_key">
 
                     <TextView
-                        android:id="@+id/editor_btn_select"
-                        android:layout_width="0dp"
+                        android:id="@+id/cursor_btn_abc"
+                        android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_margin="3dp"
-                        android:background="@drawable/bg_editor_key"
+                        android:layout_margin="5dp"
+                        android:background="@drawable/bg_cursor_abc_key"
                         android:gravity="center"
-                        android:text="@string/select_text"
-                        android:textColor="#00BCD4"
-                        android:textSize="13sp"
+                        android:text="ABC"
+                        android:textColor="#FFFFFF"
+                        android:textSize="14sp"
                         android:textStyle="bold" />
-
-                    <ImageButton
-                        android:id="@+id/editor_btn_right"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_margin="3dp"
-                        android:background="@drawable/bg_editor_key"
-                        android:contentDescription="@string/typing_and_input"
-                        android:src="@drawable/ic_chevron_right_cyan" />
-                </LinearLayout>
-
-                <!-- Down -->
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:gravity="center">
-
-                    <ImageButton
-                        android:id="@+id/editor_btn_down"
-                        android:layout_width="54dp"
-                        android:layout_height="match_parent"
-                        android:layout_gravity="center"
-                        android:layout_margin="3dp"
-                        android:background="@drawable/bg_editor_key"
-                        android:contentDescription="@string/typing_and_input"
-                        android:src="@drawable/ic_chevron_down_cyan" />
                 </FrameLayout>
 
+                <!-- 2. ⌄ (Down) -->
+                <ImageView
+                    android:id="@+id/cursor_btn_down"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:background="@drawable/bg_cursor_panel_key"
+                    android:scaleType="centerInside"
+                    android:contentDescription="@string/down"
+                    android:src="@drawable/ic_chevron_down_cyan" />
+
+                <!-- 3. إنهاء (End) -->
+                <TextView
+                    android:id="@+id/cursor_btn_end"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:background="@drawable/bg_cursor_panel_key"
+                    android:gravity="center"
+                    android:text="إنهاء"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <!-- 4. لصق (Paste) -->
+                <TextView
+                    android:id="@+id/cursor_btn_paste"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:background="@drawable/bg_cursor_panel_key"
+                    android:gravity="center"
+                    android:text="لصق"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <!-- 5. ↶ (Undo) -->
+                <ImageView
+                    android:id="@+id/cursor_btn_undo"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:background="@drawable/bg_cursor_panel_key"
+                    android:scaleType="centerInside"
+                    android:contentDescription="تراجع"
+                    android:src="@drawable/ic_undo_cyan" />
             </LinearLayout>
 
-            <!-- Actions grid on the side -->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="5"
-                android:orientation="vertical"
-                android:weightSum="4">
-
-                <!-- Row 1: Select All | Copy -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:orientation="horizontal"
-                    android:weightSum="2">
-
-                    <TextView
-                        android:id="@+id/editor_btn_select_all"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_margin="3dp"
-                        android:background="@drawable/bg_editor_key"
-                        android:gravity="center"
-                        android:text="@string/select_all"
-                        android:textColor="#E0E6ED"
-                        android:textSize="12sp" />
-
-                    <TextView
-                        android:id="@+id/editor_btn_copy"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_margin="3dp"
-                        android:background="@drawable/bg_editor_key"
-                        android:gravity="center"
-                        android:text="@string/copy"
-                        android:textColor="#E0E6ED"
-                        android:textSize="12sp" />
-                </LinearLayout>
-
-                <!-- Row 2: Cut | Paste -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:orientation="horizontal"
-                    android:weightSum="2">
-
-                    <TextView
-                        android:id="@+id/editor_btn_cut"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_margin="3dp"
-                        android:background="@drawable/bg_editor_key"
-                        android:gravity="center"
-                        android:text="@string/cut"
-                        android:textColor="#E0E6ED"
-                        android:textSize="12sp" />
-
-                    <TextView
-                        android:id="@+id/editor_btn_paste"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_margin="3dp"
-                        android:background="@drawable/bg_editor_key"
-                        android:gravity="center"
-                        android:text="@string/paste"
-                        android:textColor="#E0E6ED"
-                        android:textSize="12sp" />
-                </LinearLayout>
-
-                <!-- Row 3: Start | End -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:orientation="horizontal"
-                    android:weightSum="2">
-
-                    <TextView
-                        android:id="@+id/editor_btn_start"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_margin="3dp"
-                        android:background="@drawable/bg_editor_key"
-                        android:gravity="center"
-                        android:text="@string/start_of_line"
-                        android:textColor="#E0E6ED"
-                        android:textSize="12sp" />
-
-                    <TextView
-                        android:id="@+id/editor_btn_end"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_margin="3dp"
-                        android:background="@drawable/bg_editor_key"
-                        android:gravity="center"
-                        android:text="@string/end_of_line"
-                        android:textColor="#E0E6ED"
-                        android:textSize="12sp" />
-                </LinearLayout>
-
-                <!-- Row 4: Delete | Space -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:orientation="horizontal"
-                    android:weightSum="2">
-
-                    <TextView
-                        android:id="@+id/editor_btn_backspace"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_margin="3dp"
-                        android:background="@drawable/bg_editor_key"
-                        android:gravity="center"
-                        android:text="@string/keycode_delete"
-                        android:textColor="#FF5252"
-                        android:textSize="12sp" />
-
-                    <TextView
-                        android:id="@+id/editor_btn_space"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_margin="3dp"
-                        android:background="@drawable/bg_editor_key"
-                        android:gravity="center"
-                        android:text="@string/keycode_space"
-                        android:textColor="#E0E6ED"
-                        android:textSize="12sp" />
-                </LinearLayout>
-            </LinearLayout>
         </LinearLayout>
     </RelativeLayout>
 

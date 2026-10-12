@@ -76,7 +76,12 @@ class ClipsKeyboardAdapter(
     private fun setupClip(view: View, clip: Clip) {
         ItemClipOnKeyboardBinding.bind(view).apply {
             clipValue.apply {
-                text = clip.value
+                val cleanedText = clip.value.trim().replace(Regex("[\\r\\n\\t]+"), " ").replace(Regex(" {2,}"), " ")
+                text = if (cleanedText.length > 45) {
+                    cleanedText.take(42) + "..."
+                } else {
+                    cleanedText
+                }
                 removeUnderlines()
             }
 

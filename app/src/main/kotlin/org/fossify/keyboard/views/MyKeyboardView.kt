@@ -527,76 +527,85 @@ class MyKeyboardView @JvmOverloads constructor(
                 }
             }
 
-            // Text Editor actions (Image 91)
-            textEditorClose.setOnClickListener {
+            // Text Editor / Cursor panel actions
+            cursorBtnAbc.setOnClickListener {
+                vibrateIfNeeded()
+                closeAllPanels()
+            }
+            cursorBtnAbcHolder.setOnClickListener {
                 vibrateIfNeeded()
                 closeAllPanels()
             }
 
-            editorBtnUp.setOnClickListener {
+            cursorBtnClipboard.setOnClickListener {
+                vibrateIfNeeded()
+                openClipboardManager()
+            }
+
+            cursorBtnUp.setOnClickListener {
                 vibrateIfNeeded()
                 mOnKeyboardActionListener?.moveCursorUp()
             }
 
-            editorBtnDown.setOnClickListener {
+            cursorBtnDown.setOnClickListener {
                 vibrateIfNeeded()
                 mOnKeyboardActionListener?.moveCursorDown()
             }
 
-            editorBtnLeft.setOnClickListener {
+            cursorBtnLeft.setOnClickListener {
                 vibrateIfNeeded()
                 mOnKeyboardActionListener?.moveCursorLeft()
             }
 
-            editorBtnRight.setOnClickListener {
+            cursorBtnRight.setOnClickListener {
                 vibrateIfNeeded()
                 mOnKeyboardActionListener?.moveCursorRight()
             }
 
-            editorBtnSelect.setOnClickListener {
+            cursorBtnSelect.setOnClickListener {
                 vibrateIfNeeded()
                 val active = mOnKeyboardActionListener?.toggleSelectMode() ?: false
-                editorBtnSelect.setTextColor(if (active) Color.parseColor("#00E676") else Color.parseColor("#00BCD4"))
+                cursorBtnSelect.setTextColor(if (active) Color.parseColor("#00E676") else Color.parseColor("#00BCD4"))
             }
 
-            editorBtnSelectAll.setOnClickListener {
+            cursorBtnSelectAll.setOnClickListener {
                 vibrateIfNeeded()
                 mOnKeyboardActionListener?.selectAll()
             }
 
-            editorBtnCopy.setOnClickListener {
+            cursorBtnCopy.setOnClickListener {
                 vibrateIfNeeded()
                 mOnKeyboardActionListener?.copyText()
             }
 
-            editorBtnCut.setOnClickListener {
+            cursorBtnCut.setOnClickListener {
                 vibrateIfNeeded()
                 mOnKeyboardActionListener?.cutText()
             }
 
-            editorBtnPaste.setOnClickListener {
+            cursorBtnPaste.setOnClickListener {
                 vibrateIfNeeded()
                 mOnKeyboardActionListener?.pasteText()
             }
 
-            editorBtnStart.setOnClickListener {
-                vibrateIfNeeded()
-                mOnKeyboardActionListener?.moveToStart()
-            }
-
-            editorBtnEnd.setOnClickListener {
+            cursorBtnEnd.setOnClickListener {
                 vibrateIfNeeded()
                 mOnKeyboardActionListener?.moveToEnd()
             }
 
-            editorBtnBackspace.setOnClickListener {
+            cursorBtnBackspace.setOnClickListener {
                 vibrateIfNeeded()
                 mOnKeyboardActionListener?.deleteChar()
             }
 
-            editorBtnSpace.setOnClickListener {
+            cursorBtnSpace.setOnClickListener {
                 vibrateIfNeeded()
                 mOnKeyboardActionListener?.insertSpace()
+            }
+
+            cursorBtnUndo.setOnClickListener {
+                vibrateIfNeeded()
+                mOnKeyboardActionListener?.toggleSelectMode()
             }
 
             // Numeric Keypad actions (Matches image 100%)
@@ -786,7 +795,7 @@ class MyKeyboardView @JvmOverloads constructor(
             val closeLabel = if (isArabic) "أ ب ج" else "ABC"
             clipboardManagerClose.text = closeLabel
             toolsMenuClose.text = closeLabel
-            textEditorClose.text = closeLabel
+            cursorBtnAbc.text = closeLabel
 
             clipboardManagerClose.setTextColor(Color.parseColor("#00D2FF"))
             clipboardManagerManage.applyColorFilter(Color.parseColor("#00BCD4"))
@@ -1154,7 +1163,12 @@ class MyKeyboardView @JvmOverloads constructor(
             if (clipboardContent?.isNotEmpty() == true) {
                 keyboardViewBinding?.apply {
                     clipboardValue.apply {
-                        text = clipboardContent
+                        val cleanedPreview = clipboardContent.toString().trim().replace(Regex("[\\r\\n\\t]+"), " ").replace(Regex(" {2,}"), " ")
+                        text = if (cleanedPreview.length > 30) {
+                            cleanedPreview.take(27) + "..."
+                        } else {
+                            cleanedPreview
+                        }
                         removeUnderlines()
                         setOnClickListener {
                             mOnKeyboardActionListener!!.onText(clipboardContent.toString())
@@ -1908,7 +1922,7 @@ class MyKeyboardView @JvmOverloads constructor(
         closeAllPanels()
         keyboardViewBinding?.apply {
             val isArabic = context.config.keyboardLanguage == LANGUAGE_ARABIC
-            textEditorClose.text = if (isArabic) "أ ب ج" else "ABC"
+            cursorBtnAbc.text = if (isArabic) "أ ب ج" else "ABC"
             textEditorHolder.beVisible()
             suggestionsHolder.hideAllInlineContentViews()
         }
