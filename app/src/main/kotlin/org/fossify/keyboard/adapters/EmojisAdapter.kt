@@ -61,7 +61,15 @@ class EmojisAdapter(
 
     inner class EmojiViewHolder(val binding: ItemEmojiBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bindView(emoji: Item.Emoji) {
-            val processed = EmojiCompat.get().process(emoji.emojiData.emoji)
+            val processed = try {
+                if (EmojiCompat.isConfigured() && EmojiCompat.get().loadState == EmojiCompat.LOAD_STATE_SUCCEEDED) {
+                    EmojiCompat.get().process(emoji.emojiData.emoji) ?: emoji.emojiData.emoji
+                } else {
+                    emoji.emojiData.emoji
+                }
+            } catch (ignored: Exception) {
+                emoji.emojiData.emoji
+            }
             itemView.apply {
                 binding.emojiValue.text = processed
                 setOnClickListener {

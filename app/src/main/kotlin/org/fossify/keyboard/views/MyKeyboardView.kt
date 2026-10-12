@@ -2176,40 +2176,21 @@ class MyKeyboardView @JvmOverloads constructor(
     private fun setupEmojis() {
         ensureBackgroundThread {
             val fullEmojiList = parseRawEmojiSpecsFile(context, EMOJI_SPEC_FILE_PATH)
-            val systemFontPaint = Paint().apply {
-                typeface = Typeface.DEFAULT
-            }
-
-            val emojis = fullEmojiList.filter { emoji ->
-                systemFontPaint.hasGlyph(emoji.emoji) || (EmojiCompat.get().loadState == EmojiCompat.LOAD_STATE_SUCCEEDED && EmojiCompat.get()
-                    .getEmojiMatch(emoji.emoji, emojiCompatMetadataVersion) == EMOJI_SUPPORTED)
-            }
-
             Handler(Looper.getMainLooper()).post {
-                setupEmojiAdapter(emojis)
+                setupEmojiAdapter(fullEmojiList)
             }
         }
     }
 
-
-
     private fun prepareEmojiCategories(emojis: List<EmojiData>): Map<String, List<EmojiData>> {
-        val recentEmojis = context.config.recentlyUsedEmojis
-            .mapNotNull { emoji ->
-                val emojiData = emojis.firstOrNull { it.emoji == emoji }
-                emojiData?.copy(category = RECENTLY_USED_EMOJIS)
-            }
-
-        return (recentEmojis + emojis).groupBy { it.category }
+        return mapOf("smileys_emotion" to emojis)
     }
 
     private fun prepareEmojiItems(categories: Map<String, List<EmojiData>>): List<EmojisAdapter.Item> {
         val emojiItems = mutableListOf<EmojisAdapter.Item>()
-        categories.entries.forEach { (category, emojis) ->
-            emojiItems.add(EmojisAdapter.Item.Category(category))
+        categories.values.forEach { emojis ->
             emojiItems.addAll(emojis.map(EmojisAdapter.Item::Emoji))
         }
-
         return emojiItems
     }
 

@@ -24,6 +24,7 @@ app-build-kotlinJVMTarget = "17"
 [libraries]
 #AndroidX
 androidx-autofill = { module = "androidx.autofill:autofill", version.ref = "androidx-autofill" }
+androidx-emoji2 = { module = "androidx.emoji2:emoji2", version.ref = "androidx-emoji2" }
 androidx-emoji2-bundled = { module = "androidx.emoji2:emoji2-bundled", version.ref = "androidx-emoji2" }
 #Room
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }

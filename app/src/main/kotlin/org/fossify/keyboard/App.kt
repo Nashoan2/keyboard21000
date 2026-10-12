@@ -1,7 +1,7 @@
 package org.fossify.keyboard
 
 import android.app.Application
-import androidx.emoji2.bundled.BundledEmojiCompatConfig
+import androidx.emoji2.text.DefaultEmojiCompatConfig
 import androidx.emoji2.text.EmojiCompat
 import org.fossify.commons.extensions.checkUseEnglish
 import org.fossify.keyboard.extensions.isDeviceInDirectBootMode
@@ -16,7 +16,12 @@ class App : Application() {
     }
 
     private fun setupEmojiCompat() {
-        val config = BundledEmojiCompatConfig(this)
-        EmojiCompat.init(config)
+        try {
+            val config = DefaultEmojiCompatConfig.create(this)
+            if (config != null) {
+                EmojiCompat.init(config)
+            }
+        } catch (ignored: Exception) {
+        }
     }
 }
