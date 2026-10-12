@@ -66,16 +66,29 @@
                 android:layout_gravity="center_vertical"
                 android:background="#4D00D2FF" />
 
-            <ImageView
-                android:id="@+id/voice_input_button"
+            <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:padding="11dp"
-                android:scaleType="centerInside"
-                android:background="?android:attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/switch_to_voice_typing"
-                android:src="@drawable/ic_toolbar_mic" />
+                android:layout_weight="1">
+
+                <View
+                    android:id="@+id/voice_input_active_bg"
+                    android:layout_width="34dp"
+                    android:layout_height="34dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bg_mic_active_circle"
+                    android:visibility="gone" />
+
+                <ImageView
+                    android:id="@+id/voice_input_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="11dp"
+                    android:scaleType="centerInside"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/switch_to_voice_typing"
+                    android:src="@drawable/ic_toolbar_mic" />
+            </FrameLayout>
 
             <View
                 android:layout_width="1dp"

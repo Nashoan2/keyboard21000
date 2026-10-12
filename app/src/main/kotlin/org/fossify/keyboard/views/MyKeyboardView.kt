@@ -90,6 +90,7 @@ import org.fossify.keyboard.extensions.safeStorageContext
 import org.fossify.keyboard.helpers.AccessHelper
 import org.fossify.keyboard.helpers.EMOJI_SPEC_FILE_PATH
 import org.fossify.keyboard.helpers.EmojiData
+import org.fossify.keyboard.helpers.EmbeddedVoiceManager
 import org.fossify.keyboard.helpers.KeyboardFeedbackManager
 import org.fossify.keyboard.helpers.LANGUAGE_ARABIC
 import org.fossify.keyboard.helpers.LANGUAGE_TURKISH_Q
@@ -235,6 +236,8 @@ class MyKeyboardView @JvmOverloads constructor(
     private var mCanvas: Canvas? = null
 
     private var mHandler: Handler? = null
+
+    private val mVoiceManager = EmbeddedVoiceManager(context)
 
     companion object {
         private const val NOT_A_KEY = -1
@@ -392,22 +395,21 @@ class MyKeyboardView @JvmOverloads constructor(
 
             voiceInputButton.setOnLongClickListener { context.toast(R.string.switch_to_voice_typing); true }
             voiceInputButton.setOnClickListener {
-                val inputMethod = context.getCurrentVoiceInputMethod()
-                if (inputMethod == null) {
-                    try {
-                        val intent = android.content.Intent(android.provider.Settings.ACTION_INPUT_METHOD_SETTINGS).apply {
-                            flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                if (mVoiceManager.isListening) {
+                    mVoiceManager.stopListening()
+                } else {
+                    val started = mVoiceManager.startListening(
+                        onListeningState = { listening ->
+                            setVoiceListeningState(listening)
+                        },
+                        onResult = { text ->
+                            mOnKeyboardActionListener?.onText("$text ")
                         }
-                        context.startActivity(intent)
-                        context.toast(R.string.enable_voice_typing_settings)
-                    } catch (e: Exception) {
-                        context.toast(R.string.no_app_found)
+                    )
+                    if (!started && !mVoiceManager.hasPermission()) {
+                        mVoiceManager.requestPermission()
                     }
-                    return@setOnClickListener
                 }
-
-                val (im, type) = inputMethod
-                mOnKeyboardActionListener?.changeInputMethod(im.id, type)
             }
 
             toolbarCursor.setOnClickListener {
@@ -762,7 +764,13 @@ class MyKeyboardView @JvmOverloads constructor(
 
             toolbarSticker.applyColorFilter(Color.WHITE)
             toolbarEmoji.applyColorFilter(Color.WHITE)
-            voiceInputButton.applyColorFilter(Color.WHITE)
+            if (mVoiceManager.isListening) {
+                voiceInputActiveBg.visibility = View.VISIBLE
+                voiceInputButton.applyColorFilter(Color.parseColor("#FF4444"))
+            } else {
+                voiceInputActiveBg.visibility = View.GONE
+                voiceInputButton.applyColorFilter(Color.WHITE)
+            }
             toolbarCursor.applyColorFilter(Color.WHITE)
             pinnedClipboardItems.applyColorFilter(Color.WHITE)
             toolbarCollapse.applyColorFilter(Color.WHITE)
@@ -1833,6 +1841,7 @@ class MyKeyboardView @JvmOverloads constructor(
     }
 
     fun closeAllPanels() {
+        mVoiceManager.stopListening()
         keyboardViewBinding?.apply {
             clipboardManagerHolder.beGone()
             emojiPaletteHolder.beGone()
@@ -2325,9 +2334,22 @@ class MyKeyboardView @JvmOverloads constructor(
 
     public override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
+        mVoiceManager.destroy()
         unregisterClipboardListener()
         removeMessages()
         closing()
+    }
+
+    fun setVoiceListeningState(isListening: Boolean) {
+        keyboardViewBinding?.apply {
+            if (isListening) {
+                voiceInputActiveBg.visibility = View.VISIBLE
+                voiceInputButton.applyColorFilter(Color.parseColor("#FF4444"))
+            } else {
+                voiceInputActiveBg.visibility = View.GONE
+                voiceInputButton.applyColorFilter(Color.WHITE)
+            }
+        }
     }
 
     private fun dismissPopupKeyboard() {
