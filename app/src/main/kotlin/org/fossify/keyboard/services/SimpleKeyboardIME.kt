@@ -77,16 +77,6 @@ import org.fossify.keyboard.extensions.safeStorageContext
 import org.fossify.keyboard.helpers.HEIGHT_PERCENTAGE
 import org.fossify.keyboard.helpers.KEYBOARD_LANGUAGE
 import org.fossify.keyboard.helpers.LANGUAGE_ARABIC
-import org.fossify.keyboard.helpers.LANGUAGE_BELARUSIAN_CYRL
-import org.fossify.keyboard.helpers.LANGUAGE_BELARUSIAN_LATN
-import org.fossify.keyboard.helpers.LANGUAGE_BENGALI
-import org.fossify.keyboard.helpers.LANGUAGE_BULGARIAN
-import org.fossify.keyboard.helpers.LANGUAGE_CENTRAL_KURDISH
-import org.fossify.keyboard.helpers.LANGUAGE_CHUVASH
-import org.fossify.keyboard.helpers.LANGUAGE_CZECH_QWERTY
-import org.fossify.keyboard.helpers.LANGUAGE_CZECH_QWERTZ
-import org.fossify.keyboard.helpers.LANGUAGE_DANISH
-import org.fossify.keyboard.helpers.LANGUAGE_DUTCH
 import org.fossify.keyboard.helpers.LANGUAGE_ENGLISH_ASSET
 import org.fossify.keyboard.helpers.LANGUAGE_ENGLISH_COLEMAK
 import org.fossify.keyboard.helpers.LANGUAGE_ENGLISH_COLEMAKDH
@@ -96,29 +86,6 @@ import org.fossify.keyboard.helpers.LANGUAGE_ENGLISH_QWERTY
 import org.fossify.keyboard.helpers.LANGUAGE_ENGLISH_QWERTZ
 import org.fossify.keyboard.helpers.LANGUAGE_ENGLISH_SOUL
 import org.fossify.keyboard.helpers.LANGUAGE_ENGLISH_WORKMAN
-import org.fossify.keyboard.helpers.LANGUAGE_ESPERANTO
-import org.fossify.keyboard.helpers.LANGUAGE_FRENCH_AZERTY
-import org.fossify.keyboard.helpers.LANGUAGE_FRENCH_BEPO
-import org.fossify.keyboard.helpers.LANGUAGE_GERMAN
-import org.fossify.keyboard.helpers.LANGUAGE_GERMAN_QWERTZ
-import org.fossify.keyboard.helpers.LANGUAGE_GREEK
-import org.fossify.keyboard.helpers.LANGUAGE_HEBREW
-import org.fossify.keyboard.helpers.LANGUAGE_ITALIAN
-import org.fossify.keyboard.helpers.LANGUAGE_KABYLE_AZERTY
-import org.fossify.keyboard.helpers.LANGUAGE_LATVIAN
-import org.fossify.keyboard.helpers.LANGUAGE_LITHUANIAN
-import org.fossify.keyboard.helpers.LANGUAGE_NORWEGIAN
-import org.fossify.keyboard.helpers.LANGUAGE_POLISH
-import org.fossify.keyboard.helpers.LANGUAGE_PORTUGUESE
-import org.fossify.keyboard.helpers.LANGUAGE_PORTUGUESE_HCESAR
-import org.fossify.keyboard.helpers.LANGUAGE_ROMANIAN
-import org.fossify.keyboard.helpers.LANGUAGE_RUSSIAN
-import org.fossify.keyboard.helpers.LANGUAGE_SLOVENIAN
-import org.fossify.keyboard.helpers.LANGUAGE_SPANISH
-import org.fossify.keyboard.helpers.LANGUAGE_SWEDISH
-import org.fossify.keyboard.helpers.LANGUAGE_TURKISH
-import org.fossify.keyboard.helpers.LANGUAGE_TURKISH_Q
-import org.fossify.keyboard.helpers.LANGUAGE_UKRAINIAN
 import org.fossify.keyboard.helpers.MyKeyboard
 import org.fossify.keyboard.helpers.SHOW_KEY_BORDERS
 import org.fossify.keyboard.helpers.SHOW_NUMBERS_ROW
@@ -405,11 +372,7 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
                 val originalText = inputConnection.getExtractedText(ExtractedTextRequest(), 0)?.text
 
                 if (Character.isLetter(codeChar) && keyboard!!.mShiftState > ShiftState.OFF) {
-                    if (baseContext.config.keyboardLanguage == LANGUAGE_TURKISH_Q) {
-                        codeChar = codeChar.toString().uppercase(Locale.forLanguageTag("tr")).single()
-                    } else {
-                        codeChar = Character.toUpperCase(codeChar)
-                    }
+                    codeChar = Character.toUpperCase(codeChar)
                 }
 
                 // If the keyboard is set to symbols and the user presses space, we usually should switch back to the letters keyboard.
@@ -647,16 +610,6 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
     private fun getKeyboardLayoutXML(): Int {
         return when (baseContext.config.keyboardLanguage) {
             LANGUAGE_ARABIC -> R.xml.keys_letters_arabic
-            LANGUAGE_BELARUSIAN_CYRL -> R.xml.keys_letters_belarusian_cyrl
-            LANGUAGE_BELARUSIAN_LATN -> R.xml.keys_letters_belarusian_latn
-            LANGUAGE_BENGALI -> R.xml.keys_letters_bengali
-            LANGUAGE_BULGARIAN -> R.xml.keys_letters_bulgarian
-            LANGUAGE_CENTRAL_KURDISH -> R.xml.keys_letters_central_kurdish
-            LANGUAGE_CHUVASH -> R.xml.keys_letters_chuvash
-            LANGUAGE_CZECH_QWERTY -> R.xml.keys_letters_czech_qwerty
-            LANGUAGE_CZECH_QWERTZ -> R.xml.keys_letters_czech_qwertz
-            LANGUAGE_DANISH -> R.xml.keys_letters_danish
-            LANGUAGE_DUTCH -> R.xml.keys_letters_dutch
             LANGUAGE_ENGLISH_ASSET -> R.xml.keys_letters_english_asset
             LANGUAGE_ENGLISH_COLEMAK -> R.xml.keys_letters_english_colemak
             LANGUAGE_ENGLISH_COLEMAKDH -> R.xml.keys_letters_english_colemakdh
@@ -665,29 +618,6 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
             LANGUAGE_ENGLISH_QWERTZ -> R.xml.keys_letters_english_qwertz
             LANGUAGE_ENGLISH_SOUL -> R.xml.keys_letters_english_soul
             LANGUAGE_ENGLISH_WORKMAN -> R.xml.keys_letters_english_workman
-            LANGUAGE_ESPERANTO -> R.xml.keys_letters_esperanto
-            LANGUAGE_FRENCH_AZERTY -> R.xml.keys_letters_french_azerty
-            LANGUAGE_FRENCH_BEPO -> R.xml.keys_letters_french_bepo
-            LANGUAGE_GERMAN -> R.xml.keys_letters_german
-            LANGUAGE_GERMAN_QWERTZ -> R.xml.keys_letters_german_qwertz
-            LANGUAGE_GREEK -> R.xml.keys_letters_greek
-            LANGUAGE_HEBREW -> R.xml.keys_letters_hebrew
-            LANGUAGE_ITALIAN -> R.xml.keys_letters_italian
-            LANGUAGE_KABYLE_AZERTY -> R.xml.keys_letters_kabyle_azerty
-            LANGUAGE_LATVIAN -> R.xml.keys_letters_latvian
-            LANGUAGE_LITHUANIAN -> R.xml.keys_letters_lithuanian
-            LANGUAGE_NORWEGIAN -> R.xml.keys_letters_norwegian
-            LANGUAGE_POLISH -> R.xml.keys_letters_polish
-            LANGUAGE_PORTUGUESE -> R.xml.keys_letters_portuguese
-            LANGUAGE_PORTUGUESE_HCESAR -> R.xml.keys_letters_portuguese_hcesar
-            LANGUAGE_ROMANIAN -> R.xml.keys_letters_romanian
-            LANGUAGE_RUSSIAN -> R.xml.keys_letters_russian
-            LANGUAGE_SLOVENIAN -> R.xml.keys_letters_slovenian
-            LANGUAGE_SWEDISH -> R.xml.keys_letters_swedish
-            LANGUAGE_SPANISH -> R.xml.keys_letters_spanish_qwerty
-            LANGUAGE_TURKISH -> R.xml.keys_letters_turkish
-            LANGUAGE_TURKISH_Q -> R.xml.keys_letters_turkish_q
-            LANGUAGE_UKRAINIAN -> R.xml.keys_letters_ukrainian
             else -> R.xml.keys_letters_english_qwerty
         }
     }

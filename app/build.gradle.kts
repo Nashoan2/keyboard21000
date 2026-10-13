@@ -32,7 +32,7 @@ android {
         versionName = project.property("VERSION_NAME").toString()
         versionCode = project.property("VERSION_CODE").toString().toInt()
         multiDexEnabled = true
-        vectorDrawables.useSupportLibrary = true
+        resourceConfigurations.addAll(listOf("ar", "en"))
         ksp {
             arg("room.schemaLocation", "$projectDir/schemas")
         }
