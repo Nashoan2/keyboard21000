@@ -18,6 +18,7 @@ import android.icu.util.ULocale
 import android.inputmethodservice.InputMethodService
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.text.InputType.TYPE_CLASS_DATETIME
 import android.text.InputType.TYPE_CLASS_NUMBER
 import android.text.InputType.TYPE_CLASS_PHONE
@@ -131,12 +132,36 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
         super.onCreate()
     }
 
+    private fun isOurKeyboardActive(): Boolean {
+        return try {
+            val currentIme = Settings.Secure.getString(
+                contentResolver,
+                Settings.Secure.DEFAULT_INPUT_METHOD
+            ) ?: return false
+            currentIme.contains(packageName)
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private fun canCaptureClipboard(): Boolean {
+        return isInputViewShown && isOurKeyboardActive()
+    }
+
     private fun initClipboardListener() {
+        if (!canCaptureClipboard()) {
+            removeClipboardListener()
+            return
+        }
         if (mClipboardListener != null) return
         try {
             mClipboardManager = getSystemService(CLIPBOARD_SERVICE) as? ClipboardManager
             mClipboardListener = ClipboardManager.OnPrimaryClipChangedListener {
-                syncClipboardInternal()
+                if (canCaptureClipboard()) {
+                    syncClipboardInternal()
+                } else {
+                    removeClipboardListener()
+                }
             }
             mClipboardManager?.addPrimaryClipChangedListener(mClipboardListener)
         } catch (ignored: Exception) {
@@ -152,6 +177,10 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
     }
 
     private fun syncClipboardInternal() {
+        if (!canCaptureClipboard()) {
+            removeClipboardListener()
+            return
+        }
         try {
             val cm = mClipboardManager ?: (getSystemService(CLIPBOARD_SERVICE) as? ClipboardManager) ?: return
             val clip = cm.primaryClip ?: return
@@ -168,6 +197,7 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
             }
 
             ensureBackgroundThread {
+                if (!canCaptureClipboard()) return@ensureBackgroundThread
                 var addedAny = false
                 for (i in 0 until clip.itemCount) {
                     val clipText = clip.getItemAt(i)?.text?.toString()?.trim()
@@ -219,9 +249,13 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
 
     override fun onStartInputView(editorInfo: EditorInfo?, restarting: Boolean) {
         super.onStartInputView(editorInfo, restarting)
-        initClipboardListener()
+        if (canCaptureClipboard()) {
+            initClipboardListener()
+        } else {
+            removeClipboardListener()
+        }
         updateBackgroundColors()
-        syncClipboardInternal()
+        // Do NOT auto-import system clipboard from other keyboards on start
         if (inputTypeClass == TYPE_CLASS_NUMBER || inputTypeClass == TYPE_CLASS_PHONE) {
             keyboardView?.openNumericKeypad()
         } else {
@@ -230,7 +264,7 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
             keyboard = createNewKeyboard()
             keyboard?.let { keyboardView?.setKeyboard(it) }
         }
-        keyboardView?.syncClipboard()
+        keyboardView?.handleClipboard()
         binding.keyboardHolder.post {
             ViewCompat.requestApplyInsets(binding.keyboardHolder)
         }
@@ -244,10 +278,30 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
         keyboardMode = KEYBOARD_LETTERS
     }
 
+    override fun onFinishInput() {
+        super.onFinishInput()
+        removeClipboardListener()
+        keyboardView?.unregisterClipboardListener()
+    }
+
     override fun onWindowHidden() {
         super.onWindowHidden()
         removeClipboardListener()
         keyboardView?.unregisterClipboardListener()
+    }
+
+    override fun onUnbind(intent: Intent?): Boolean {
+        removeClipboardListener()
+        keyboardView?.unregisterClipboardListener()
+        return super.onUnbind(intent)
+    }
+
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        if (!isInputViewShown) {
+            removeClipboardListener()
+            keyboardView?.unregisterClipboardListener()
+        }
     }
 
     override fun onDestroy() {
@@ -573,10 +627,20 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
 
     override fun copyText() {
         currentInputConnection?.performContextMenuAction(android.R.id.copy)
+        binding.root.postDelayed({
+            if (canCaptureClipboard()) {
+                syncClipboardInternal()
+            }
+        }, 150L)
     }
 
     override fun cutText() {
         currentInputConnection?.performContextMenuAction(android.R.id.cut)
+        binding.root.postDelayed({
+            if (canCaptureClipboard()) {
+                syncClipboardInternal()
+            }
+        }, 150L)
     }
 
     override fun pasteText() {

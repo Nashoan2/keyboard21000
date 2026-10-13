@@ -1960,7 +1960,6 @@ class MyKeyboardView @JvmOverloads constructor(
             clipboardManagerHolder.beVisible()
             suggestionsHolder.hideAllInlineContentViews()
         }
-        syncClipboard()
         setupStoredClips()
     }
 
@@ -2013,15 +2012,7 @@ class MyKeyboardView @JvmOverloads constructor(
     private var mPrimaryClipChangedListener: ClipboardManager.OnPrimaryClipChangedListener? = null
 
     fun registerClipboardListener() {
-        if (mPrimaryClipChangedListener != null) return
-        try {
-            val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager ?: return
-            mPrimaryClipChangedListener = ClipboardManager.OnPrimaryClipChangedListener {
-                syncClipboard()
-            }
-            cm.addPrimaryClipChangedListener(mPrimaryClipChangedListener)
-        } catch (ignored: Exception) {
-        }
+        // Lifecycle is managed centrally in SimpleKeyboardIME to avoid duplicate listeners and battery drain
     }
 
     fun unregisterClipboardListener() {
@@ -2034,7 +2025,14 @@ class MyKeyboardView @JvmOverloads constructor(
     }
 
     fun syncClipboard() {
+        if (!isShown) return
         try {
+            val currentIme = android.provider.Settings.Secure.getString(
+                context.contentResolver,
+                android.provider.Settings.Secure.DEFAULT_INPUT_METHOD
+            ) ?: return
+            if (!currentIme.contains(context.packageName)) return
+
             val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager ?: return
             val clip = cm.primaryClip
             if (clip != null && clip.itemCount > 0) {
