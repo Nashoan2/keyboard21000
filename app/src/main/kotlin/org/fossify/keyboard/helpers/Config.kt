@@ -48,7 +48,10 @@ class Config(context: Context) : BaseConfig(context) {
         set(lastExportedClipsFolder) = prefs.edit().putString(LAST_EXPORTED_CLIPS_FOLDER, lastExportedClipsFolder).apply()
 
     var keyboardLanguage: Int
-        get() = prefs.getInt(KEYBOARD_LANGUAGE, getDefaultLanguage())
+        get() {
+            val lang = prefs.getInt(KEYBOARD_LANGUAGE, LANGUAGE_ARABIC)
+            return if (lang in SUPPORTED_LANGUAGES) lang else LANGUAGE_ARABIC
+        }
         set(keyboardLanguage) = prefs.edit().putInt(KEYBOARD_LANGUAGE, keyboardLanguage).apply()
 
     var keyboardHeightPercentage: Int
@@ -73,12 +76,16 @@ class Config(context: Context) : BaseConfig(context) {
 
     var selectedLanguages: MutableSet<Int>
         get() {
-            val defaultLanguage = getDefaultLanguage().toString()
-            val stringSet = prefs.getStringSet(SELECTED_LANGUAGES, hashSetOf(defaultLanguage))!!
-            return stringSet.map { it.toInt() }.toMutableSet()
+            val stringSet = prefs.getStringSet(SELECTED_LANGUAGES, null)
+            val filtered = stringSet?.mapNotNull { it.toIntOrNull() }?.filter { it in SUPPORTED_LANGUAGES }?.toMutableSet()
+            if (filtered.isNullOrEmpty()) {
+                return mutableSetOf(LANGUAGE_ARABIC, LANGUAGE_ENGLISH_QWERTY)
+            }
+            return filtered
         }
         set(selectedLanguages) {
-            val stringSet = selectedLanguages.map { it.toString() }.toSet()
+            val filtered = selectedLanguages.filter { it in SUPPORTED_LANGUAGES }.toSet()
+            val stringSet = filtered.map { it.toString() }.toSet()
             prefs.edit().putStringSet(SELECTED_LANGUAGES, stringSet).apply()
         }
 

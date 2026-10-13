@@ -47,7 +47,7 @@ interface ClipsDao {
     @Query("DELETE FROM clips WHERE is_pinned = 0")
     fun deleteAll()
 
-    // Keep up to 3500 unpinned items (accommodating >3000 clips as requested by user)
-    @Query("DELETE FROM clips WHERE is_pinned = 0 AND id <= (SELECT id FROM clips WHERE is_pinned = 0 ORDER BY id DESC LIMIT 1 OFFSET 3500)")
+    // Keep up to 4000 unpinned items (accommodating >3000 clips as requested by user)
+    @Query("DELETE FROM clips WHERE is_pinned = 0 AND id <= (SELECT id FROM clips WHERE is_pinned = 0 ORDER BY id DESC LIMIT 1 OFFSET 4000)")
     fun trimRecentClips()
 }

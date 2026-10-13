@@ -83,15 +83,7 @@ import org.fossify.keyboard.extensions.safeStorageContext
 import org.fossify.keyboard.helpers.HEIGHT_PERCENTAGE
 import org.fossify.keyboard.helpers.KEYBOARD_LANGUAGE
 import org.fossify.keyboard.helpers.LANGUAGE_ARABIC
-import org.fossify.keyboard.helpers.LANGUAGE_ENGLISH_ASSET
-import org.fossify.keyboard.helpers.LANGUAGE_ENGLISH_COLEMAK
-import org.fossify.keyboard.helpers.LANGUAGE_ENGLISH_COLEMAKDH
-import org.fossify.keyboard.helpers.LANGUAGE_ENGLISH_DVORAK
-import org.fossify.keyboard.helpers.LANGUAGE_ENGLISH_NIRO
 import org.fossify.keyboard.helpers.LANGUAGE_ENGLISH_QWERTY
-import org.fossify.keyboard.helpers.LANGUAGE_ENGLISH_QWERTZ
-import org.fossify.keyboard.helpers.LANGUAGE_ENGLISH_SOUL
-import org.fossify.keyboard.helpers.LANGUAGE_ENGLISH_WORKMAN
 import org.fossify.keyboard.helpers.MyKeyboard
 import org.fossify.keyboard.helpers.SHOW_KEY_BORDERS
 import org.fossify.keyboard.helpers.SHOW_NUMBERS_ROW
@@ -137,7 +129,6 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
 
     override fun onCreate() {
         super.onCreate()
-        initClipboardListener()
     }
 
     private fun initClipboardListener() {
@@ -148,6 +139,14 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
                 syncClipboardInternal()
             }
             mClipboardManager?.addPrimaryClipChangedListener(mClipboardListener)
+        } catch (ignored: Exception) {
+        }
+    }
+
+    private fun removeClipboardListener() {
+        try {
+            mClipboardListener?.let { mClipboardManager?.removePrimaryClipChangedListener(it) }
+            mClipboardListener = null
         } catch (ignored: Exception) {
         }
     }
@@ -220,6 +219,7 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
 
     override fun onStartInputView(editorInfo: EditorInfo?, restarting: Boolean) {
         super.onStartInputView(editorInfo, restarting)
+        initClipboardListener()
         updateBackgroundColors()
         syncClipboardInternal()
         if (inputTypeClass == TYPE_CLASS_NUMBER || inputTypeClass == TYPE_CLASS_PHONE) {
@@ -238,18 +238,22 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
 
     override fun onFinishInputView(finishingInput: Boolean) {
         super.onFinishInputView(finishingInput)
+        removeClipboardListener()
+        keyboardView?.unregisterClipboardListener()
         keyboardView?.closeAllPanels()
         keyboardMode = KEYBOARD_LETTERS
     }
 
+    override fun onWindowHidden() {
+        super.onWindowHidden()
+        removeClipboardListener()
+        keyboardView?.unregisterClipboardListener()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
-        try {
-            mClipboardListener?.let { mClipboardManager?.removePrimaryClipChangedListener(it) }
-            mClipboardListener = null
-            mClipboardManager = null
-        } catch (ignored: Exception) {
-        }
+        removeClipboardListener()
+        mClipboardManager = null
         keyboardView?.unregisterClipboardListener()
         keyboardView?.closeAllPanels()
         try {
@@ -693,14 +697,6 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
     private fun getKeyboardLayoutXML(): Int {
         return when (baseContext.config.keyboardLanguage) {
             LANGUAGE_ARABIC -> R.xml.keys_letters_arabic
-            LANGUAGE_ENGLISH_ASSET -> R.xml.keys_letters_english_asset
-            LANGUAGE_ENGLISH_COLEMAK -> R.xml.keys_letters_english_colemak
-            LANGUAGE_ENGLISH_COLEMAKDH -> R.xml.keys_letters_english_colemakdh
-            LANGUAGE_ENGLISH_DVORAK -> R.xml.keys_letters_english_dvorak
-            LANGUAGE_ENGLISH_NIRO -> R.xml.keys_letters_english_niro
-            LANGUAGE_ENGLISH_QWERTZ -> R.xml.keys_letters_english_qwertz
-            LANGUAGE_ENGLISH_SOUL -> R.xml.keys_letters_english_soul
-            LANGUAGE_ENGLISH_WORKMAN -> R.xml.keys_letters_english_workman
             else -> R.xml.keys_letters_english_qwerty
         }
     }

@@ -250,7 +250,7 @@ class MyKeyboardView @JvmOverloads constructor(
         private const val DEBOUNCE_TIME = 70
         private const val REPEAT_INTERVAL = 45
         private const val REPEAT_START_DELAY = 280
-        private const val DELETE_REPEAT_START_DELAY = 250
+        private const val DELETE_REPEAT_START_DELAY = 160
         private val LONGPRESS_TIMEOUT = ViewConfiguration.getLongPressTimeout()
     }
 
@@ -484,9 +484,17 @@ class MyKeyboardView @JvmOverloads constructor(
                 }
             }
 
+            toolItemEditor.setOnClickListener {
+                vibrateIfNeeded()
+                openTextEditor()
+            }
+
             toolItemResize.setOnClickListener {
                 vibrateIfNeeded()
-                context.toast(R.string.keyboard_height)
+                Intent(context, SettingsActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(this)
+                }
             }
 
             toolItemTheme.setOnClickListener {
@@ -495,31 +503,6 @@ class MyKeyboardView @JvmOverloads constructor(
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     context.startActivity(this)
                 }
-            }
-
-            toolItemTranslate.setOnClickListener {
-                vibrateIfNeeded()
-                context.toast(R.string.tool_translate)
-            }
-
-            toolItemFloating.setOnClickListener {
-                vibrateIfNeeded()
-                context.toast(R.string.tool_floating)
-            }
-
-            toolItemEditor.setOnClickListener {
-                vibrateIfNeeded()
-                openTextEditor()
-            }
-
-            toolItemStickers.setOnClickListener {
-                vibrateIfNeeded()
-                context.toast(R.string.tool_stickers)
-            }
-
-            toolItemGifs.setOnClickListener {
-                vibrateIfNeeded()
-                context.toast(R.string.tool_gifs)
             }
 
             toolItemLanguages.setOnClickListener {
@@ -891,11 +874,14 @@ class MyKeyboardView @JvmOverloads constructor(
 
     public override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         if (mKeyboard == null) {
-            setMeasuredDimension(0, 0)
+            val defaultH = (resources.getDimension(R.dimen.key_height) * 4).toInt()
+            val w = MeasureSpec.getSize(widthMeasureSpec).let { if (it > 0) it else resources.displayMetrics.widthPixels }
+            setMeasuredDimension(w, defaultH)
         } else {
             var width = mKeyboard!!.mMinWidth
-            if (MeasureSpec.getSize(widthMeasureSpec) < width + 10) {
-                width = MeasureSpec.getSize(widthMeasureSpec)
+            val specSize = MeasureSpec.getSize(widthMeasureSpec)
+            if (specSize > 0 && specSize < width + 10) {
+                width = specSize
             }
             setMeasuredDimension(width, mKeyboard!!.mHeight)
         }
@@ -990,7 +976,7 @@ class MyKeyboardView @JvmOverloads constructor(
                 val startX = (key.width - lineWidth) / 2f
                 canvas.drawLine(startX, lineY, startX + lineWidth, lineY, linePaint)
             }
-            val isCyanKey = label == "AR"
+            val isCyanKey = label == "AR" || label == "EN"
             val textColor = when {
                 key.pressed -> if (isCyanKey) Color.parseColor("#8000E5FF") else Color.WHITE.adjustAlpha(0.6f)
                 isCyanKey -> Color.parseColor("#00E5FF")
@@ -1000,7 +986,7 @@ class MyKeyboardView @JvmOverloads constructor(
             // Switch the character to uppercase if shift is pressed
             if (label?.isNotEmpty() == true) {
                 paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-                if (label == "123" || label == "AR" || label == "لا") {
+                if (label == "123" || label == "?123" || label == "AR" || label == "EN" || label == "لا") {
                     paint.textSize = mLabelTextSize.toFloat()
                 } else if (code == KEYCODE_SPACE) {
                     paint.textSize = mSpaceBarTextSize.toFloat()
@@ -1873,10 +1859,10 @@ class MyKeyboardView @JvmOverloads constructor(
         if (key.code != KEYCODE_SPACE) {
             mRepeatCount++
             if (key.code == KEYCODE_DELETE) {
-                // Accelerate deletion when long pressing delete
+                // Accelerate deletion quickly when long pressing delete
                 val deleteBatch = when {
-                    mRepeatCount > 25 -> 3 // Fast delete (3 characters per cycle)
-                    mRepeatCount > 10 -> 2 // Accelerated delete (2 characters per cycle)
+                    mRepeatCount > 15 -> 3 // Ultra fast delete (3 characters per cycle)
+                    mRepeatCount > 5 -> 2  // Accelerated delete (2 characters per cycle)
                     else -> 1              // Single character delete initially
                 }
                 for (i in 0 until deleteBatch) {
@@ -1893,10 +1879,10 @@ class MyKeyboardView @JvmOverloads constructor(
         val key = mKeys.getOrNull(mRepeatKeyIndex)
         return if (key?.code == KEYCODE_DELETE) {
             when {
-                mRepeatCount > 25 -> 25L // Super fast
-                mRepeatCount > 10 -> 35L // Fast
-                mRepeatCount > 3 -> 45L  // Accelerated
-                else -> 55L              // Comfortable start
+                mRepeatCount > 15 -> 18L // Ultra fast
+                mRepeatCount > 8 -> 25L  // Very fast
+                mRepeatCount > 3 -> 35L  // Accelerated
+                else -> 45L              // Snappy initial repeat
             }
         } else {
             REPEAT_INTERVAL.toLong()
