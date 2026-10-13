@@ -1,8 +1,14 @@
 package org.fossify.keyboard.services
 
 import android.annotation.SuppressLint
+import android.content.ClipboardManager
 import android.content.Intent
 import android.content.SharedPreferences
+import android.os.Handler
+import android.os.Looper
+import org.fossify.commons.helpers.ensureBackgroundThread
+import org.fossify.keyboard.extensions.clipsDB
+import org.fossify.keyboard.models.Clip
 import android.graphics.Bitmap
 import android.graphics.drawable.Icon
 import android.graphics.drawable.LayerDrawable
@@ -124,6 +130,73 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
 
     private lateinit var binding: KeyboardViewKeyboardBinding
 
+    private var mClipboardManager: ClipboardManager? = null
+    private var mClipboardListener: ClipboardManager.OnPrimaryClipChangedListener? = null
+    private var lastSyncClipText: String? = null
+    private var lastSyncTime: Long = 0L
+
+    override fun onCreate() {
+        super.onCreate()
+        initClipboardListener()
+    }
+
+    private fun initClipboardListener() {
+        if (mClipboardListener != null) return
+        try {
+            mClipboardManager = getSystemService(CLIPBOARD_SERVICE) as? ClipboardManager
+            mClipboardListener = ClipboardManager.OnPrimaryClipChangedListener {
+                syncClipboardInternal()
+            }
+            mClipboardManager?.addPrimaryClipChangedListener(mClipboardListener)
+        } catch (ignored: Exception) {
+        }
+    }
+
+    private fun syncClipboardInternal() {
+        try {
+            val cm = mClipboardManager ?: (getSystemService(CLIPBOARD_SERVICE) as? ClipboardManager) ?: return
+            val clip = cm.primaryClip ?: return
+            if (clip.itemCount <= 0) return
+
+            val now = System.currentTimeMillis()
+            val firstItemText = clip.getItemAt(0)?.text?.toString()?.trim()
+            if (!firstItemText.isNullOrEmpty()) {
+                if (firstItemText == lastSyncClipText && (now - lastSyncTime) < 500L) {
+                    return
+                }
+                lastSyncClipText = firstItemText
+                lastSyncTime = now
+            }
+
+            ensureBackgroundThread {
+                var addedAny = false
+                for (i in 0 until clip.itemCount) {
+                    val clipText = clip.getItemAt(i)?.text?.toString()?.trim()
+                    if (!clipText.isNullOrEmpty()) {
+                        // Delete older copy from recent clips so this newly copied text moves to the top
+                        clipsDB.deleteRecentClipWithValue(clipText)
+                        val newClip = Clip(null, clipText, isPinned = false)
+                        clipsDB.insertOrUpdate(newClip)
+                        addedAny = true
+                    }
+                }
+
+                if (addedAny) {
+                    // Retain up to 3500 unpinned items (surpassing the 3000 limit requested)
+                    clipsDB.trimRecentClips()
+
+                    Handler(Looper.getMainLooper()).post {
+                        keyboardView?.apply {
+                            handleClipboard()
+                            setupStoredClips()
+                        }
+                    }
+                }
+            }
+        } catch (ignored: Exception) {
+        }
+    }
+
     override fun onInitializeInterface() {
         super.onInitializeInterface()
         safeStorageContext.getSharedPrefs().registerOnSharedPreferenceChangeListener(this)
@@ -148,6 +221,7 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
     override fun onStartInputView(editorInfo: EditorInfo?, restarting: Boolean) {
         super.onStartInputView(editorInfo, restarting)
         updateBackgroundColors()
+        syncClipboardInternal()
         if (inputTypeClass == TYPE_CLASS_NUMBER || inputTypeClass == TYPE_CLASS_PHONE) {
             keyboardView?.openNumericKeypad()
         } else {
@@ -156,7 +230,6 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
             keyboard = createNewKeyboard()
             keyboard?.let { keyboardView?.setKeyboard(it) }
         }
-        keyboardView?.registerClipboardListener()
         keyboardView?.syncClipboard()
         binding.keyboardHolder.post {
             ViewCompat.requestApplyInsets(binding.keyboardHolder)
@@ -165,13 +238,18 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
 
     override fun onFinishInputView(finishingInput: Boolean) {
         super.onFinishInputView(finishingInput)
-        keyboardView?.unregisterClipboardListener()
         keyboardView?.closeAllPanels()
         keyboardMode = KEYBOARD_LETTERS
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        try {
+            mClipboardListener?.let { mClipboardManager?.removePrimaryClipChangedListener(it) }
+            mClipboardListener = null
+            mClipboardManager = null
+        } catch (ignored: Exception) {
+        }
         keyboardView?.unregisterClipboardListener()
         keyboardView?.closeAllPanels()
         try {

@@ -194,6 +194,7 @@ class MyKeyboardView @JvmOverloads constructor(
     private var mPopupX = 0
     private var mPopupY = 0
     private var mRepeatKeyIndex = NOT_A_KEY
+    private var mRepeatCount = 0
     private var mPopupLayout = 0
     private var mAbortKey = false
     private var mCursorControlActive = false
@@ -247,8 +248,9 @@ class MyKeyboardView @JvmOverloads constructor(
         private const val MSG_LONGPRESS = 3
         private const val DELAY_AFTER_PREVIEW = 100
         private const val DEBOUNCE_TIME = 70
-        private const val REPEAT_INTERVAL = 50 // ~20 keys per second
-        private const val REPEAT_START_DELAY = 400
+        private const val REPEAT_INTERVAL = 45
+        private const val REPEAT_START_DELAY = 280
+        private const val DELETE_REPEAT_START_DELAY = 250
         private val LONGPRESS_TIMEOUT = ViewConfiguration.getLongPressTimeout()
     }
 
@@ -318,7 +320,7 @@ class MyKeyboardView @JvmOverloads constructor(
                         MSG_REMOVE_PREVIEW -> mPreviewText!!.visibility = INVISIBLE
                         MSG_REPEAT -> if (repeatKey()) {
                             val repeat = Message.obtain(this, MSG_REPEAT)
-                            sendMessageDelayed(repeat, REPEAT_INTERVAL.toLong())
+                            sendMessageDelayed(repeat, getNextRepeatDelay())
                         }
 
                         MSG_LONGPRESS -> openPopupIfRequired(msg.obj as MotionEvent)
@@ -593,9 +595,26 @@ class MyKeyboardView @JvmOverloads constructor(
                 mOnKeyboardActionListener?.moveToEnd()
             }
 
-            cursorBtnBackspace.setOnClickListener {
-                vibrateIfNeeded()
-                mOnKeyboardActionListener?.deleteChar()
+            cursorBtnBackspace.setOnTouchListener { _, event ->
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        cursorBtnBackspace.isPressed = true
+                        mRepeatKeyIndex = mKeys.indexOfFirst { it.code == KEYCODE_DELETE }
+                        mCurrentKey = mRepeatKeyIndex
+                        mRepeatCount = 0
+                        vibrateIfNeeded()
+                        mOnKeyboardActionListener?.onKey(KEYCODE_DELETE)
+                        val msg = mHandler?.obtainMessage(MSG_REPEAT)
+                        if (msg != null) mHandler?.sendMessageDelayed(msg, DELETE_REPEAT_START_DELAY.toLong())
+                        true
+                    }
+                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                        resetRepeat()
+                        cursorBtnBackspace.isPressed = false
+                        false
+                    }
+                    else -> false
+                }
             }
 
             cursorBtnSpace.setOnClickListener {
@@ -642,15 +661,15 @@ class MyKeyboardView @JvmOverloads constructor(
                         numKeyBackspace.isPressed = true
                         mRepeatKeyIndex = mKeys.indexOfFirst { it.code == KEYCODE_DELETE }
                         mCurrentKey = mRepeatKeyIndex
+                        mRepeatCount = 0
                         vibrateIfNeeded()
                         mOnKeyboardActionListener?.onKey(KEYCODE_DELETE)
                         val msg = mHandler?.obtainMessage(MSG_REPEAT)
-                        if (msg != null) mHandler?.sendMessageDelayed(msg, REPEAT_START_DELAY.toLong())
+                        if (msg != null) mHandler?.sendMessageDelayed(msg, DELETE_REPEAT_START_DELAY.toLong())
                         true
                     }
                     MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                        mHandler?.removeMessages(MSG_REPEAT)
-                        mRepeatKeyIndex = NOT_A_KEY
+                        resetRepeat()
                         numKeyBackspace.isPressed = false
                         false
                     }
@@ -1170,7 +1189,7 @@ class MyKeyboardView @JvmOverloads constructor(
         secondaryIcon.draw(canvas)
     }
 
-    private fun handleClipboard() {
+    fun handleClipboard() {
         if (mToolbarHolder != null && mPopupParent.id != R.id.mini_keyboard_view && context.config.showClipboardContent) {
             val clipboardContent = context.getCurrentClip()
             if (clipboardContent?.isNotEmpty() == true) {
@@ -1701,9 +1720,11 @@ class MyKeyboardView @JvmOverloads constructor(
                 var wasHandled = false
                 if (mCurrentKey >= 0 && mKeys[mCurrentKey].repeatable) {
                     mRepeatKeyIndex = mCurrentKey
+                    mRepeatCount = 0
 
                     val msg = mHandler!!.obtainMessage(MSG_REPEAT)
-                    mHandler!!.sendMessageDelayed(msg, REPEAT_START_DELAY.toLong())
+                    val delay = if (mKeys[mCurrentKey].code == KEYCODE_DELETE) DELETE_REPEAT_START_DELAY.toLong() else REPEAT_START_DELAY.toLong()
+                    mHandler!!.sendMessageDelayed(msg, delay)
                     // if the user long presses space bar, move the cursor after swiping left/right
                     if (mKeys[mCurrentKey].code == KEYCODE_SPACE) {
                         mLastSpaceMoveX = -1
@@ -1714,7 +1735,7 @@ class MyKeyboardView @JvmOverloads constructor(
 
                     // Delivering the key could have caused an abort
                     if (mAbortKey) {
-                        mRepeatKeyIndex = NOT_A_KEY
+                        resetRepeat()
                         wasHandled = true
                     }
                 }
@@ -1823,7 +1844,7 @@ class MyKeyboardView @JvmOverloads constructor(
                     detectAndSendKey(mCurrentKey, touchX, touchY, eventTime)
                 }
 
-                mRepeatKeyIndex = NOT_A_KEY
+                resetRepeat()
                 mOnKeyboardActionListener!!.onActionUp()
                 mCursorControlActive = false
             }
@@ -1845,11 +1866,47 @@ class MyKeyboardView @JvmOverloads constructor(
     }
 
     private fun repeatKey(): Boolean {
+        if (mRepeatKeyIndex == NOT_A_KEY || mRepeatKeyIndex !in mKeys.indices) {
+            return false
+        }
         val key = mKeys[mRepeatKeyIndex]
         if (key.code != KEYCODE_SPACE) {
-            detectAndSendKey(mCurrentKey, key.x, key.y, mLastTapTime)
+            mRepeatCount++
+            if (key.code == KEYCODE_DELETE) {
+                // Accelerate deletion when long pressing delete
+                val deleteBatch = when {
+                    mRepeatCount > 25 -> 3 // Fast delete (3 characters per cycle)
+                    mRepeatCount > 10 -> 2 // Accelerated delete (2 characters per cycle)
+                    else -> 1              // Single character delete initially
+                }
+                for (i in 0 until deleteBatch) {
+                    mOnKeyboardActionListener?.onKey(KEYCODE_DELETE)
+                }
+            } else {
+                detectAndSendKey(mCurrentKey, key.x, key.y, mLastTapTime)
+            }
         }
         return true
+    }
+
+    private fun getNextRepeatDelay(): Long {
+        val key = mKeys.getOrNull(mRepeatKeyIndex)
+        return if (key?.code == KEYCODE_DELETE) {
+            when {
+                mRepeatCount > 25 -> 25L // Super fast
+                mRepeatCount > 10 -> 35L // Fast
+                mRepeatCount > 3 -> 45L  // Accelerated
+                else -> 55L              // Comfortable start
+            }
+        } else {
+            REPEAT_INTERVAL.toLong()
+        }
+    }
+
+    private fun resetRepeat() {
+        mHandler?.removeMessages(MSG_REPEAT)
+        mRepeatKeyIndex = NOT_A_KEY
+        mRepeatCount = 0
     }
 
     private fun setCurrentKeyPressed(pressed: Boolean) {
@@ -1995,16 +2052,24 @@ class MyKeyboardView @JvmOverloads constructor(
             val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager ?: return
             val clip = cm.primaryClip
             if (clip != null && clip.itemCount > 0) {
-                val clipText = clip.getItemAt(0)?.text?.toString()?.trim()
-                if (!clipText.isNullOrEmpty()) {
-                    ensureBackgroundThread {
-                        // If this text already exists in recent (unpinned) clips, delete the older copy so the new copy jumps to the top
-                        context.clipsDB.deleteRecentClipWithValue(clipText)
+                ensureBackgroundThread {
+                    var addedAny = false
+                    for (i in 0 until clip.itemCount) {
+                        val clipText = clip.getItemAt(i)?.text?.toString()?.trim()
+                        if (!clipText.isNullOrEmpty()) {
+                            // If this text already exists in recent (unpinned) clips, delete the older copy so the new copy jumps to the top
+                            context.clipsDB.deleteRecentClipWithValue(clipText)
 
-                        // Insert the newly copied text as unpinned in Recent clips!
-                        // NOTE: If this text is already pinned, the pinned clip remains untouched and pinned in the pinned section!
-                        val newClip = Clip(null, clipText, isPinned = false)
-                        context.clipsDB.insertOrUpdate(newClip)
+                            // Insert the newly copied text as unpinned in Recent clips!
+                            val newClip = Clip(null, clipText, isPinned = false)
+                            context.clipsDB.insertOrUpdate(newClip)
+                            addedAny = true
+                        }
+                    }
+
+                    if (addedAny) {
+                        // Keep up to 3500 unpinned items (accommodating >3000 clips)
+                        context.clipsDB.trimRecentClips()
 
                         Handler(Looper.getMainLooper()).post {
                             handleClipboard()
@@ -2023,16 +2088,16 @@ class MyKeyboardView @JvmOverloads constructor(
             val pinnedClips = context.clipsDB.getPinnedClips()
             val recentClips = context.clipsDB.getRecentClips()
 
-            if (pinnedClips.isNotEmpty()) {
-                val section = ClipsSectionLabel(context.getString(R.string.pinned_clips), false)
-                clips.add(section)
-                clips.addAll(pinnedClips)
-            }
-
             if (recentClips.isNotEmpty()) {
                 val section = ClipsSectionLabel(context.getString(R.string.recent_clips), false)
                 clips.add(section)
                 clips.addAll(recentClips)
+            }
+
+            if (pinnedClips.isNotEmpty()) {
+                val section = ClipsSectionLabel(context.getString(R.string.pinned_clips), false)
+                clips.add(section)
+                clips.addAll(pinnedClips)
             }
 
             Handler(Looper.getMainLooper()).post {
@@ -2142,17 +2207,17 @@ class MyKeyboardView @JvmOverloads constructor(
                             isPressed = true
                             mRepeatKeyIndex = mKeys.indexOfFirst { it.code == KEYCODE_DELETE }
                             mCurrentKey = mRepeatKeyIndex
+                            mRepeatCount = 0
                             vibrateIfNeeded()
                             mOnKeyboardActionListener!!.onKey(KEYCODE_DELETE)
-                            // setup repeating backspace
+                            // setup repeating backspace with fast start delay
                             val msg = mHandler!!.obtainMessage(MSG_REPEAT)
-                            mHandler!!.sendMessageDelayed(msg, REPEAT_START_DELAY.toLong())
+                            mHandler!!.sendMessageDelayed(msg, DELETE_REPEAT_START_DELAY.toLong())
                             true
                         }
 
-                        MotionEvent.ACTION_UP -> {
-                            mHandler!!.removeMessages(MSG_REPEAT)
-                            mRepeatKeyIndex = NOT_A_KEY
+                        MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                            resetRepeat()
                             isPressed = false
                             false
                         }
@@ -2320,6 +2385,7 @@ class MyKeyboardView @JvmOverloads constructor(
             removeMessages(MSG_REPEAT)
             removeMessages(MSG_LONGPRESS)
         }
+        mRepeatCount = 0
     }
 
     public override fun onDetachedFromWindow() {

@@ -8,7 +8,7 @@ import org.fossify.keyboard.models.Clip
 
 @Dao
 interface ClipsDao {
-    @Query("SELECT * FROM clips ORDER BY is_pinned DESC, id DESC")
+    @Query("SELECT * FROM clips ORDER BY is_pinned ASC, id DESC")
     fun getClips(): List<Clip>
 
     @Query("SELECT * FROM clips WHERE is_pinned = 1 ORDER BY id DESC")
@@ -46,4 +46,8 @@ interface ClipsDao {
     // Deleting all clipboard texts deletes ONLY unpinned clips! Pinned items are protected!
     @Query("DELETE FROM clips WHERE is_pinned = 0")
     fun deleteAll()
+
+    // Keep up to 3500 unpinned items (accommodating >3000 clips as requested by user)
+    @Query("DELETE FROM clips WHERE is_pinned = 0 AND id <= (SELECT id FROM clips WHERE is_pinned = 0 ORDER BY id DESC LIMIT 1 OFFSET 3500)")
+    fun trimRecentClips()
 }
