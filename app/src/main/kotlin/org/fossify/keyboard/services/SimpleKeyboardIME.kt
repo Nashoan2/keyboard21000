@@ -131,6 +131,9 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
 
     override fun onCreateInputView(): View {
         binding = KeyboardViewKeyboardBinding.inflate(layoutInflater)
+        if (keyboard == null) {
+            keyboard = createNewKeyboard()
+        }
         keyboardView = binding.keyboardView.apply {
             setKeyboardHolder(binding)
             setKeyboard(keyboard!!)
@@ -145,7 +148,9 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
     override fun onStartInputView(editorInfo: EditorInfo?, restarting: Boolean) {
         super.onStartInputView(editorInfo, restarting)
         updateBackgroundColors()
-        if (inputTypeClass != TYPE_CLASS_NUMBER && inputTypeClass != TYPE_CLASS_PHONE) {
+        if (inputTypeClass == TYPE_CLASS_NUMBER || inputTypeClass == TYPE_CLASS_PHONE) {
+            keyboardView?.openNumericKeypad()
+        } else {
             keyboardView?.closeAllPanels()
             keyboardMode = KEYBOARD_LETTERS
             keyboard = createNewKeyboard()

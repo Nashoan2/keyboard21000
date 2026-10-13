@@ -21,7 +21,6 @@
         android:layoutDirection="ltr"
         android:background="@drawable/bg_toolbar_neon"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/keyboard_view"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
@@ -209,7 +208,7 @@
         android:id="@+id/keyboard_view"
         style="@style/MyKeyboardView"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="3dp"
         android:layout_marginEnd="3dp"
         android:layout_marginBottom="2dp"
@@ -226,10 +225,10 @@
         android:clickable="true"
         android:focusable="true"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar_holder">
+        app:layout_constraintBottom_toBottomOf="@+id/keyboard_view"
+        app:layout_constraintEnd_toEndOf="@+id/keyboard_view"
+        app:layout_constraintStart_toStartOf="@+id/keyboard_view"
+        app:layout_constraintTop_toTopOf="@+id/keyboard_view">
 
         <RelativeLayout
             android:id="@+id/emoji_palette_top_bar"
@@ -335,10 +334,10 @@
         android:layoutDirection="ltr"
         android:clickable="true"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar_holder">
+        app:layout_constraintBottom_toBottomOf="@+id/keyboard_view"
+        app:layout_constraintEnd_toEndOf="@+id/keyboard_view"
+        app:layout_constraintStart_toStartOf="@+id/keyboard_view"
+        app:layout_constraintTop_toTopOf="@+id/keyboard_view">
 
         <RelativeLayout
             android:id="@+id/clipboard_manager_top_bar"
@@ -490,10 +489,10 @@
         android:focusable="true"
         android:visibility="gone"
         android:background="@color/theme_dark_background_color"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar_holder">
+        app:layout_constraintBottom_toBottomOf="@+id/keyboard_view"
+        app:layout_constraintEnd_toEndOf="@+id/keyboard_view"
+        app:layout_constraintStart_toStartOf="@+id/keyboard_view"
+        app:layout_constraintTop_toTopOf="@+id/keyboard_view">
 
         <RelativeLayout
             android:id="@+id/tools_menu_top_bar"
@@ -799,10 +798,10 @@
         android:paddingTop="3dp"
         android:paddingEnd="3dp"
         android:paddingBottom="4dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar_holder">
+        app:layout_constraintBottom_toBottomOf="@+id/keyboard_view"
+        app:layout_constraintEnd_toEndOf="@+id/keyboard_view"
+        app:layout_constraintStart_toStartOf="@+id/keyboard_view"
+        app:layout_constraintTop_toTopOf="@+id/keyboard_view">
 
         <RelativeLayout
             android:id="@+id/text_editor_top_bar"
@@ -1082,10 +1081,10 @@
         android:paddingTop="2dp"
         android:paddingBottom="4dp"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar_holder">
+        app:layout_constraintBottom_toBottomOf="@+id/keyboard_view"
+        app:layout_constraintEnd_toEndOf="@+id/keyboard_view"
+        app:layout_constraintStart_toStartOf="@+id/keyboard_view"
+        app:layout_constraintTop_toTopOf="@+id/keyboard_view">
 
         <!-- Hidden dummy for ViewBinding backward compatibility -->
         <TextView
