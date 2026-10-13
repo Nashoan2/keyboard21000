@@ -133,7 +133,6 @@ class ClipsKeyboardAdapter(
             context.toast(R.string.cannot_delete_pinned)
             return
         }
-        ClipsHelper.addDeletedText(clip.value)
         ClipsHelper.clearSystemClipboardIfMatches(context, clip.value)
         ensureBackgroundThread {
             if (clip.id != null && clip.id != -1L) {

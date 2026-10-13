@@ -20,6 +20,15 @@ interface ClipsDao {
     @Query("SELECT id FROM clips WHERE value = :value")
     fun getClipWithValue(value: String): Long?
 
+    @Query("SELECT id FROM clips WHERE value = :value AND is_pinned = 1 LIMIT 1")
+    fun getPinnedClipWithValue(value: String): Long?
+
+    @Query("SELECT id FROM clips WHERE value = :value AND is_pinned = 0 LIMIT 1")
+    fun getRecentClipWithValue(value: String): Long?
+
+    @Query("DELETE FROM clips WHERE value = :value AND is_pinned = 0")
+    fun deleteRecentClipWithValue(value: String)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertOrUpdate(clip: Clip): Long
 

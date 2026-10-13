@@ -11,24 +11,16 @@ import java.util.Collections
 class ClipsHelper(val context: Context) {
 
     companion object {
-        // Keeps track of deleted texts so they never resurrect or re-appear
-        val deletedTexts: MutableSet<String> = Collections.synchronizedSet(HashSet<String>())
-
         fun addDeletedText(text: String?) {
-            val trimmed = text?.trim() ?: return
-            if (trimmed.isNotEmpty()) {
-                deletedTexts.add(trimmed)
-            }
+            // Text is cleared from system clipboard via clearSystemClipboardIfMatches
         }
 
         fun isDeletedText(text: String?): Boolean {
-            val trimmed = text?.trim() ?: return true
-            return deletedTexts.contains(trimmed)
+            // Never permanently block user from copying text again
+            return false
         }
 
         fun clearDeletedText(text: String?) {
-            val trimmed = text?.trim() ?: return
-            deletedTexts.remove(trimmed)
         }
 
         fun clearSystemClipboardIfMatches(context: Context, text: String?) {

@@ -178,6 +178,12 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
     override fun onStartInputView(editorInfo: EditorInfo?, restarting: Boolean) {
         super.onStartInputView(editorInfo, restarting)
         updateBackgroundColors()
+        if (inputTypeClass != TYPE_CLASS_NUMBER && inputTypeClass != TYPE_CLASS_PHONE) {
+            keyboardView?.closeAllPanels()
+            keyboardMode = KEYBOARD_LETTERS
+            keyboard = createNewKeyboard()
+            keyboard?.let { keyboardView?.setKeyboard(it) }
+        }
         keyboardView?.registerClipboardListener()
         keyboardView?.syncClipboard()
         binding.keyboardHolder.post {
@@ -188,11 +194,14 @@ class SimpleKeyboardIME : InputMethodService(), OnKeyboardActionListener, Shared
     override fun onFinishInputView(finishingInput: Boolean) {
         super.onFinishInputView(finishingInput)
         keyboardView?.unregisterClipboardListener()
+        keyboardView?.closeAllPanels()
+        keyboardMode = KEYBOARD_LETTERS
     }
 
     override fun onDestroy() {
         super.onDestroy()
         keyboardView?.unregisterClipboardListener()
+        keyboardView?.closeAllPanels()
         try {
             safeStorageContext.getSharedPrefs().unregisterOnSharedPreferenceChangeListener(this)
         } catch (ignored: Exception) {

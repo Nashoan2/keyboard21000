@@ -431,6 +431,7 @@ class MyKeyboardView @JvmOverloads constructor(
 
             toolbarCollapse.setOnClickListener {
                 vibrateIfNeeded()
+                closeAllPanels()
                 (context as? android.inputmethodservice.InputMethodService)?.requestHideSelf(0)
             }
 
@@ -452,7 +453,6 @@ class MyKeyboardView @JvmOverloads constructor(
                 ensureBackgroundThread {
                     val unpinned = context.clipsDB.getRecentClips()
                     for (clip in unpinned) {
-                        ClipsHelper.addDeletedText(clip.value)
                         ClipsHelper.clearSystemClipboardIfMatches(context, clip.value)
                     }
                     context.clipsDB.deleteAll()
@@ -1979,32 +1979,23 @@ class MyKeyboardView @JvmOverloads constructor(
 
     fun syncClipboard() {
         try {
-            if (!context.config.isClipboardInitialized) {
-                context.config.isClipboardInitialized = true
-                val existing = context.getCurrentClip()?.trim()
-                if (!existing.isNullOrEmpty()) {
-                    ClipsHelper.addDeletedText(existing)
-                }
-                setupStoredClips()
-                return
-            }
-
             val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager ?: return
             val clip = cm.primaryClip
             if (clip != null && clip.itemCount > 0) {
                 val clipText = clip.getItemAt(0)?.text?.toString()?.trim()
                 if (!clipText.isNullOrEmpty()) {
-                    if (ClipsHelper.isDeletedText(clipText)) {
-                        return
-                    }
                     ensureBackgroundThread {
-                        if (context.clipsDB.getClipWithValue(clipText) == null) {
-                            val newClip = Clip(null, clipText, isPinned = false)
-                            context.clipsDB.insertOrUpdate(newClip)
-                            Handler(Looper.getMainLooper()).post {
-                                handleClipboard()
-                                setupStoredClips()
-                            }
+                        // If this text already exists in recent (unpinned) clips, delete the older copy so the new copy jumps to the top
+                        context.clipsDB.deleteRecentClipWithValue(clipText)
+
+                        // Insert the newly copied text as unpinned in Recent clips!
+                        // NOTE: If this text is already pinned, the pinned clip remains untouched and pinned in the pinned section!
+                        val newClip = Clip(null, clipText, isPinned = false)
+                        context.clipsDB.insertOrUpdate(newClip)
+
+                        Handler(Looper.getMainLooper()).post {
+                            handleClipboard()
+                            setupStoredClips()
                         }
                     }
                 }
@@ -2014,14 +2005,6 @@ class MyKeyboardView @JvmOverloads constructor(
     }
 
     fun setupStoredClips() {
-        if (!context.config.isClipboardInitialized) {
-            context.config.isClipboardInitialized = true
-            val existing = context.getCurrentClip()?.trim()
-            if (!existing.isNullOrEmpty()) {
-                ClipsHelper.addDeletedText(existing)
-            }
-        }
-
         ensureBackgroundThread {
             val clips = ArrayList<ListItem>()
             val pinnedClips = context.clipsDB.getPinnedClips()
@@ -2103,7 +2086,6 @@ class MyKeyboardView @JvmOverloads constructor(
                             context.toast(R.string.cannot_delete_pinned)
                             return
                         }
-                        ClipsHelper.addDeletedText(item.value)
                         ClipsHelper.clearSystemClipboardIfMatches(context, item.value)
                         ensureBackgroundThread {
                             if (item.id != null && item.id != -1L) {
