@@ -958,6 +958,19 @@ class MyKeyboardView @JvmOverloads constructor(
             val label = adjustCase(key.label)?.toString()
 
             setupKeyBackground(key, code, canvas)
+            if (code == KEYCODE_SPACE) {
+                val density = resources.displayMetrics.density
+                val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                    color = Color.parseColor("#00E5FF")
+                    strokeWidth = 3f * density
+                    strokeCap = Paint.Cap.ROUND
+                    style = Paint.Style.STROKE
+                }
+                val lineWidth = key.width * 0.45f
+                val lineY = key.height - 10f * density
+                val startX = (key.width - lineWidth) / 2f
+                canvas.drawLine(startX, lineY, startX + lineWidth, lineY, linePaint)
+            }
             val isCyanKey = label == "AR"
             val textColor = when {
                 key.pressed -> if (isCyanKey) Color.parseColor("#8000E5FF") else Color.WHITE.adjustAlpha(0.6f)
@@ -1029,7 +1042,7 @@ class MyKeyboardView @JvmOverloads constructor(
                 }
 
                 if (code == KEYCODE_ENTER) {
-                    val enterColor = if (key.pressed) Color.parseColor("#8000E5FF") else Color.parseColor("#00E5FF")
+                    val enterColor = if (key.pressed) Color.WHITE.adjustAlpha(0.6f) else Color.WHITE
                     key.icon!!.applyColorFilter(enterColor)
                     key.secondaryIcon?.applyColorFilter(enterColor.adjustAlpha(0.6f))
                 } else if (code == KEYCODE_DELETE) {

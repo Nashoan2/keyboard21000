@@ -6,7 +6,7 @@
     <!-- Return shaft -->
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#00E5FF"
+        android:strokeColor="#FFFFFFFF"
         android:strokeWidth="2.8"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"
@@ -14,7 +14,7 @@
     <!-- Return arrow head -->
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#00E5FF"
+        android:strokeColor="#FFFFFFFF"
         android:strokeWidth="2.8"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"

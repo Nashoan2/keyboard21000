@@ -39,13 +39,13 @@
             app:popupCharacters="٩"
             app:popupKeyboard="@xml/keyboard_popup_template" />
         <Key
-            app:keyLabel="ح"
-            app:popupCharacters="٠"
+            app:keyLabel="ج"
+            app:popupCharacters="ڇ"
             app:popupKeyboard="@xml/keyboard_popup_template" />
         <Key
             app:keyEdgeFlags="right"
-            app:keyLabel="ج"
-            app:popupCharacters="ڇ"
+            app:keyLabel="ح"
+            app:popupCharacters="٠"
             app:popupKeyboard="@xml/keyboard_popup_template" />
     </Row>
     <Row app:keyWidth="9.0909%p">
